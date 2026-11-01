@@ -1,0 +1,163 @@
+{
+  "_설명": "장소별 생성 자산. image/video 파일은 static/images, static/videos 폴더에 place_id 이름으로 넣으면 화면에 자동 표시됨. video_prompt는 영상 workflow 확정 후 채움.",
+  "GIMHAE_001": {
+    "lora": "gimhae001_suro_v1.safetensors",
+    "trigger": "gh001suro",
+    "image_prompt": "gh001suro, front view of the royal tomb, cloudy sky, mountain in the background, green lawn, summer",
+    "image_file": "GIMHAE_001.png",
+    "video_file": "GIMHAE_001.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_002": {
+    "lora": "gimhae002_hwangok_v1.safetensors",
+    "trigger": "gh002hwangok",
+    "image_prompt": "gh002hwangok, distant view from the entrance path, stone stairs, white fence with red gate, signboards on both sides, street lamps, hazy sky, summer",
+    "image_file": "GIMHAE_002.png",
+    "video_file": "GIMHAE_002.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_003": {
+    "lora": "gimhae003_daeseong_v1.safetensors",
+    "trigger": "gh003daeseong",
+    "image_prompt": "gh003daeseong, silhouette, bare branches, purple and pink twilight sky, people and a bicycle on the hill",
+    "image_file": "GIMHAE_003.png",
+    "video_file": "GIMHAE_003.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_004": {
+    "lora": "gimhae004_bakmul_v2.safetensors",
+    "trigger": "gh004bakmul",
+    "image_prompt": "gh004bakmul, side view of a display case, black armor vest and iron helmets, dark floor",
+    "image_file": "GIMHAE_004.png",
+    "video_file": "GIMHAE_004.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_005": {
+    "lora": "gimhae005_gosang_v1.safetensors",
+    "trigger": "gh005gosang",
+    "image_prompt": "gh005gosang, wooden boardwalk on the right, wooden stairs, green lawn, clear blue sky, summer",
+    "image_file": "GIMHAE_005.png",
+    "video_file": "GIMHAE_005.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_006": {
+    "lora": "gimhae006_clayarch_v1.safetensors",
+    "trigger": "gh006clayarch",
+    "image_prompt": "gh006clayarch, low angle side view, entrance canopy, stone paved plaza, cloudy grey sky, summer",
+    "image_file": "GIMHAE_006.png",
+    "video_file": "GIMHAE_006.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_007": {
+    "lora": "gimhae007_gaya_v1.safetensors",
+    "trigger": "gh007gaya",
+    "image_prompt": "gh007gaya, two-story red pavilion with green windows, dirt plaza, low brick wall, bare tree on the right, clear blue sky, spring",
+    "image_file": "GIMHAE_007.png",
+    "video_file": "GIMHAE_007.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_008": {
+    "lora": "gimhae008_yeonji_v1.safetensors",
+    "trigger": "gh008yeonji",
+    "image_prompt": "gh008yeonji, small pond with stone banks, wooden fences, red autumn trees, small wooden houses, cloudy sky, autumn",
+    "image_file": "GIMHAE_008.png",
+    "video_file": "GIMHAE_008.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_009": {
+    "lora": "gimhae009_bunsan_v1.safetensors",
+    "trigger": "gh009bunsan",
+    "image_prompt": "gh009bunsan, winding wall at sunset, warm golden light on the stones, city below, orange sky, autumn",
+    "image_file": "GIMHAE_009.png",
+    "video_file": "GIMHAE_009.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_010": {
+    "lora": "gimhae010_eunha_v1.safetensors",
+    "trigger": "gh010eunha",
+    "image_prompt": "gh010eunha, side view, red wooden gable wall, green lattice windows, stone stairs on the right, stone retaining wall, black signboard post in front, bare trees, pale sky, early spring",
+    "image_file": "GIMHAE_010.png",
+    "video_file": "GIMHAE_010.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_011": {
+    "lora": "gimhae011_cheoljjuk_v1.safetensors",
+    "trigger": "gh011cheoljjuk",
+    "image_prompt": "gh011cheoljjuk, close pink flowers in the foreground, wide slope of pink flowers, green hilltop, blue sky with white clouds",
+    "image_file": "GIMHAE_011.png",
+    "video_file": "GIMHAE_011.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_012": {
+    "lora": "gimhae012_cheolgyo_v1.safetensors",
+    "trigger": "gh012cheolgyo",
+    "image_prompt": "gh012cheolgyo, very low angle on the rails, red rail bike with two people far ahead, white light sculpture arch in the middle, white mesh railings on both sides, warm light",
+    "image_file": "GIMHAE_012.png",
+    "video_file": "GIMHAE_012.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_013": {
+    "lora": "gimhae013_hwapo_v1.safetensors",
+    "trigger": "gh013hwapo",
+    "image_prompt": "gh013hwapo, vertical view, wooden deck path with low railings, tall green reeds on both sides, tree branches at the top left, leaf shadows on the deck, blue sky with big white clouds, summer",
+    "image_file": "GIMHAE_013.png",
+    "video_file": "GIMHAE_013.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_014": {
+    "lora": "gimhae014_cheonmun_v1.safetensors",
+    "trigger": "gh014cheonmun",
+    "image_prompt": "gh014cheonmun, curved railing of the observation deck, dome lit in blue on the left, city lights far below, dark cloudy night sky",
+    "image_file": "GIMHAE_014.png",
+    "video_file": "GIMHAE_014.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_015": {
+    "lora": "gimhae015_mulnori_v1.safetensors",
+    "trigger": "gh015mulnori",
+    "image_prompt": "gh015mulnori, wide front view, white foamy waves, huge crowd in life jackets, big red and yellow water slide and slide tower on the left, thatched roof buildings on the right, blue sky with white clouds",
+    "image_file": "GIMHAE_015.png",
+    "video_file": "GIMHAE_015.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_016": {
+    "lora": "gimhae016_gyegok_v1.safetensors",
+    "trigger": "gh016gyegok",
+    "image_prompt": "gh016gyegok, small waterfall far in the back, mossy green boulders, calm pool with reflection, dense green forest, summer",
+    "image_file": "GIMHAE_016.png",
+    "video_file": "GIMHAE_016.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_017": {
+    "lora": "gimhae017_gima_v1.safetensors",
+    "trigger": "gh017gima",
+    "image_prompt": "gh017gima, rearing horseman on the left, line of statues along the lawn, big rock, pine trees, green mountain, clear blue sky, summer",
+    "image_file": "GIMHAE_017.png",
+    "video_file": "GIMHAE_017.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_018": {
+    "lora": "gimhae018_bawi_v1.safetensors",
+    "trigger": "gh018bawi",
+    "image_prompt": "gh018bawi, low angle vertical view, pine branches at the top, bare branches on the right, clear deep blue sky, winter",
+    "image_file": "GIMHAE_018.png",
+    "video_file": "GIMHAE_018.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_019": {
+    "lora": "gimhae019_yasijang_v1.safetensors",
+    "trigger": "gh019yasijang",
+    "image_prompt": "gh019yasijang, opening night, huge crowd of people, yellow balloons, blue container building with balcony, yellow stage with screen, string lights, dark night sky",
+    "image_file": "GIMHAE_019.png",
+    "video_file": "GIMHAE_019.mp4",
+    "video_prompt": ""
+  },
+  "GIMHAE_020": {
+    "lora": "gimhae020_choseon_v1.safetensors",
+    "trigger": "gh020choseon",
+    "image_prompt": "gh020choseon, vertical close view, carved seated figure with round face, rough pale stone, dark shadow on the left, green grass on the right, bright sunlight",
+    "image_file": "GIMHAE_020.png",
+    "video_file": "GIMHAE_020.mp4",
+    "video_prompt": ""
+  }
+}
