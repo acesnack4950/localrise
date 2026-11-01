@@ -6,53 +6,58 @@
 <title>LocalRise · 나에게 맞는 김해 여행</title>
 <!-- 전시장 인터넷이 끊겨도 동작하도록 외부 폰트·스크립트를 쓰지 않는다 -->
 <style>
-  :root { --g:#0f7a4a; --g2:#14935a; --gl:#e6f5ec; --line:#d7e6dd; --text:#1c2b24; --muted:#5f7368; --night:#10241a; }
+  :root { --g:#2e6b4f; --g2:#3a8160; --gl:#eef4ee; --y:#f4b82b; --yl:#fdf1d2; --clay:#cfc8b2; --line:#e6dfcc; --text:#1f2421; --muted:#6b6a60; --night:#23251f; }
   * { box-sizing:border-box; margin:0; }
   body { font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif; color:var(--text);
-         background:linear-gradient(160deg,#f4faf6,#e5f2ea); min-height:100vh; padding:20px 28px 40px; }
+         background:#faf6ec; min-height:100vh; padding:20px 28px 40px; }
   header { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:18px; }
   h1 { font-size:1.8rem; font-weight:900; } h1 span { color:var(--g); }
   .sub { color:var(--g); font-weight:600; margin-top:6px; }
   .bot { display:flex; align-items:center; gap:10px; }
-  .bot i { font-style:normal; font-size:2rem; width:56px; height:56px; display:grid; place-items:center; background:#fff; border:2px solid var(--line); border-radius:50%; }
+  .bot img { width:92px; height:92px; object-fit:contain; }
   .bubble { background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 14px; font-size:.9rem; color:var(--muted); max-width:280px; line-height:1.5; }
   .grid { display:grid; grid-template-columns:1fr 1.15fr 0.9fr; gap:18px; align-items:start; }
-  .panel { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 4px 18px rgba(15,122,74,.06); }
-  .step { display:inline-block; background:var(--g); color:#fff; font-size:.75rem; font-weight:700; padding:3px 9px; border-radius:6px; margin-right:8px; }
+  .panel { background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 4px 18px rgba(60,50,20,.05); }
+  .step { display:inline-block; background:var(--y); color:var(--text); font-size:.75rem; font-weight:700; padding:3px 9px; border-radius:6px; margin-right:8px; }
   .ptitle { font-weight:800; font-size:1.1rem; } .psub { color:var(--muted); font-size:.85rem; margin:6px 0 16px; }
   .bar { height:8px; background:var(--gl); border-radius:99px; overflow:hidden; margin-bottom:8px; }
-  .bar i { display:block; height:100%; width:0; background:var(--g2); transition:width .3s; }
+  .bar i { display:block; height:100%; width:0; background:var(--y); transition:width .3s; }
   .count { text-align:right; color:var(--muted); font-size:.85rem; margin-bottom:10px; }
-  .q { font-weight:800; font-size:1.25rem; margin:4px 0 16px; line-height:1.4; }
+  .q { font-weight:800; font-size:1.25rem; margin:4px 0 16px; line-height:1.4; display:flex; align-items:center; gap:10px; }
+  .q img { width:64px; flex:none; }
+  .mascot { display:block; margin:0 auto 12px; width:130px; }
+  .persona-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; } .persona-row img { width:70px; flex:none; } .persona-row .persona { margin:0; flex:1; }
+  .phone .msg img { width:150px; display:block; margin:0 auto 14px; }
   .opts { display:grid; gap:12px; }
   .opts button, .ghost { min-height:72px; padding:16px 14px; border:2px solid var(--line); background:#fff; border-radius:14px;
          font:inherit; font-size:1.1rem; font-weight:600; cursor:pointer; color:var(--text); transition:.15s; }
-  .opts button:hover, .opts button:active, .ghost:hover { border-color:var(--g); background:var(--gl); }
+  .opts button:hover, .opts button:active, .ghost:hover { border-color:var(--y); background:var(--yl); }
   .back { margin-top:12px; background:none; border:0; color:var(--muted); font:inherit; cursor:pointer; text-decoration:underline; }
   .primary { width:100%; min-height:60px; border:0; border-radius:14px; background:var(--g); color:#fff; font:inherit; font-weight:800; font-size:1.05rem; cursor:pointer; }
   .primary:hover { background:var(--g2); } .primary:disabled { background:#b7cdc1; cursor:not-allowed; }
   .profile { margin-top:18px; padding-top:16px; border-top:1px dashed var(--line); }
   .profile b { font-size:.95rem; display:block; margin-bottom:10px; text-align:center; }
   .persona { background:var(--g); color:#fff; border-radius:14px; padding:14px 16px; line-height:1.6; font-size:1rem; margin-bottom:10px; }
-  .tag { display:inline-block; background:var(--gl); color:var(--g); border-radius:99px; font-size:.8rem; padding:4px 10px; margin:2px; }
+  .tag { display:inline-block; background:var(--yl); color:#7a5a10; border-radius:99px; font-size:.8rem; padding:4px 10px; margin:2px; }
   .empty { color:var(--muted); text-align:center; padding:56px 10px; font-size:1rem; line-height:1.8; }
   .spinner { width:38px; height:38px; border:4px solid var(--gl); border-top-color:var(--g); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 14px; }
   #list { display:grid; gap:10px; margin-bottom:14px; }
   .card { display:grid; grid-template-columns:92px 1fr; gap:12px; padding:10px; border:2px solid var(--line); border-radius:14px;
           cursor:pointer; transition:.15s; animation:fade .4s ease both; text-align:left; background:#fff; font:inherit; color:inherit; }
-  .card:hover { border-color:#9fd2b6; } .card.sel { border-color:var(--g); background:#f6fcf8; }
+  .card:hover { border-color:var(--clay); } .card.sel { border-color:var(--y); background:#fffaf0; }
   .thumb { width:92px; height:92px; border-radius:10px; object-fit:cover; display:grid; place-items:center; color:#fff; font-weight:900; font-size:1.7rem; }
   .card h3 { font-size:1.05rem; margin-bottom:4px; } .card h3 small { color:var(--g); font-weight:800; margin-right:4px; }
   .card p { color:var(--muted); font-size:.85rem; line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
   .card.sel p { -webkit-line-clamp:unset; color:var(--text); }
-  .phone { position:relative; aspect-ratio:9/16; max-height:620px; margin:0 auto; border-radius:20px; overflow:hidden; background:var(--night);
-           display:grid; place-items:center; color:#fff; text-align:center; }
-  .phone video, .phone img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+  .phone { position:relative; aspect-ratio:9/16; max-height:620px; margin:0 auto; border-radius:20px; overflow:hidden; background:#f3eee0;
+           border:6px solid var(--night); display:grid; place-items:center; color:var(--text); text-align:center; }
+  .phone video, .phone #still { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
   .phone .msg { padding:24px; font-size:1rem; line-height:1.7; opacity:.92; z-index:1; }
-  .caption { position:absolute; left:16px; right:16px; bottom:16px; text-align:left; font-size:.95rem; line-height:1.5;
+  .caption { position:absolute; left:16px; right:16px; bottom:16px; text-align:left; font-size:.95rem; line-height:1.5; color:#fff;
              text-shadow:0 1px 6px #000; display:none; z-index:2; }
   .caption b { font-size:1.2rem; }
   .debug { margin-top:14px; font-size:.75rem; color:var(--muted); }
+  .credit { margin-top:16px; font-size:.75rem; color:var(--muted); text-align:center; }
   @keyframes fade { from { opacity:0; transform:translateY(8px); } } @keyframes spin { to { transform:rotate(360deg); } }
   @media (max-width:1000px) { .grid { grid-template-columns:1fr; } .bubble { display:none; } .phone { max-height:520px; } }
 </style>
@@ -63,7 +68,7 @@
     <h1>AI 에이전트와 함께하는 <span>나만의 김해 여행</span></h1>
     <p class="sub">질문 7개로 여행 성향을 분석하고, 딱 맞는 김해 여행지 5곳과 영상을 보여 드려요</p>
   </div>
-  <div class="bot"><div class="bubble">둘 중 더 끌리는 쪽을 골라 주세요. 제가 김해 여행 코스를 짜 드릴게요!</div><i>🤖</i></div>
+  <div class="bot"><div class="bubble">안녕하세요, 김해의 토더기예요! 둘 중 더 끌리는 쪽을 골라 주면 김해 여행 코스를 짜 드릴게요.</div><img src="/static/brand/todeogi_hello.png" alt="" onerror="this.remove()"></div>
 </header>
 
 <div class="grid">
@@ -84,13 +89,14 @@
     <div><span class="step">STEP 3</span><span class="ptitle">미리 떠나는 여행 영상</span></div>
     <p class="psub">AI가 만든 장소 영상</p>
     <div class="phone">
-      <div class="msg" id="phoneMsg">추천 여행지를 고르면<br>여기에서 볼 수 있어요</div>
+      <div class="msg" id="phoneMsg"><img src="/static/brand/todeogi_camera.png" alt="" onerror="this.remove()">추천 여행지를 고르면<br>여기에서 볼 수 있어요</div>
       <img id="still" alt="">
       <video id="player" playsinline muted loop></video>
       <div class="caption" id="caption"></div>
     </div>
   </section>
 </div>
+<p class="credit">캐릭터: 김해시 마스코트 토더기 (김해시 사용 허락)</p>
 <div class="debug" id="debug" hidden></div>
 
 <script>
@@ -98,6 +104,7 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const COLORS = ["#2f8f5b", "#3b7fb5", "#c47f2c", "#7a5bb5", "#b5476b"];
 const DEBUG = new URLSearchParams(location.search).has("debug");   // 주소 끝에 ?debug 붙이면 생성 방식 표시
+const IMG = n => `<img src="/static/brand/todeogi_${n}.png" alt="" onerror="this.remove()">`;
 const IDLE_RESET_MS = 120000;   // 결과 화면에서 2분 동안 아무도 안 만지면 처음으로 (전시용)
 
 async function api(url, body) {
@@ -117,7 +124,7 @@ async function startSurvey() {
   sessionId = "s_" + Math.random().toString(36).slice(2, 10);
   $("recoBox").innerHTML = '<div class="empty">질문을 마치면<br>추천 여행지가 나타나요</div>';
   $("profile").innerHTML = '<p class="psub" style="text-align:center">질문에 답하면 채워져요</p>';
-  resetPhone("추천 여행지를 고르면<br>여기에서 볼 수 있어요");
+  resetPhone(IMG("camera") + "추천 여행지를 고르면<br>여기에서 볼 수 있어요");
   try {
     if (!questions.length) questions = (await api("/quiz")).questions;
     renderQuestion();
@@ -130,7 +137,7 @@ function renderQuestion() {
   const q = questions[idx];
   $("surveyBox").innerHTML = `<div class="bar"><i style="width:${idx / questions.length * 100}%"></i></div>
     <div class="count">${idx + 1} / ${questions.length}</div>
-    <div class="q">${esc(q.text)}</div>
+    <div class="q">${IMG("curious")}<span>${esc(q.text)}</span></div>
     <div class="opts">
       <button data-v="A">${esc(q.options.A.label)}</button>
       <button data-v="B">${esc(q.options.B.label)}</button>
@@ -151,12 +158,12 @@ function pick(id, v) {
 
 async function submit() {
   $("surveyBox").innerHTML = '<div class="bar"><i style="width:100%"></i></div><div class="empty">답변 완료!<br>AI가 여행 성향을 분석하고 있어요</div>';
-  $("recoBox").innerHTML = '<div class="empty"><div class="spinner"></div>AI가 김해 여행지를 고르는 중이에요</div>';
+  $("recoBox").innerHTML = `<div class="empty"><img class="mascot" src="/static/brand/todeogi_magic.png" alt="" onerror="this.remove()">토더기가 김해 여행지를 고르는 중이에요<br><small>잠시만 기다려 주세요</small></div>`;
   const t0 = performance.now();
   try {
     const d = await api("/recommend_quiz", { answers });
     places = d.recommendations;
-    $("profile").innerHTML = `<div class="persona">${esc(d.persona_summary)}</div>` + $("profile").innerHTML;
+    $("profile").innerHTML = `<div class="persona-row">${IMG("thumbsup")}<div class="persona">${esc(d.persona_summary)}</div></div>` + $("profile").innerHTML;
     $("surveyBox").innerHTML = '<div class="empty">딱 맞는 여행지를 찾았어요!</div><button class="ghost" style="width:100%" id="restart">처음부터 다시 하기</button>';
     $("restart").onclick = startSurvey;
     if (DEBUG) { $("debug").hidden = false; $("debug").textContent = `생성 방식: ${d.source} · 응답 ${((performance.now() - t0) / 1000).toFixed(1)}초 · 답: ${Object.values(answers).join("")}`; }
@@ -208,7 +215,7 @@ async function ensureTask(p) {
 
 async function showPlace(p) {
   const token = ++viewToken;
-  resetPhone(`<div class="spinner"></div>${esc(p.place_name)}<br>영상 준비 중...`);
+  resetPhone(`${IMG("travel")}${esc(p.place_name)}<br>영상 준비 중...`);
   try {
     const t = await ensureTask(p);
     for (let tries = 0; tries < 60 && !t.result; tries++) {   // 최대 약 2분 기다림
@@ -227,9 +234,9 @@ async function showPlace(p) {
       $("still").src = r.image_url || p.image_url; $("still").style.display = "block";
     } else {
       $("phoneMsg").style.display = "block";
-      $("phoneMsg").innerHTML = `${esc(p.place_name)}<br>영상을 준비하고 있어요`;
+      $("phoneMsg").innerHTML = `${IMG("travel")}${esc(p.place_name)}<br>영상을 준비하고 있어요`;
     }
-    $("caption").style.display = "block";
+    $("caption").style.display = $("phoneMsg").style.display === "none" ? "block" : "none";
     $("caption").innerHTML = `<b>${esc(p.place_name)}</b><br>${(p.matching_tags || []).map(t => "#" + esc(t)).join(" ")} #김해여행`;
   } catch (e) {
     if (token === viewToken) resetPhone(`${esc(p.place_name)}<br>영상을 불러오지 못했어요`);
