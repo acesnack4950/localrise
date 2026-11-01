@@ -4,7 +4,8 @@ LocalRise 김해 관광지 추천 API  (2026 AIM 챌린지 본선)
 전체 흐름
   1) 성향 입력  : 2지선다 질문 답(POST /recommend_quiz) 또는 문장(POST /recommend)
   2) 후보 선정  : 질문 답 → 장소 특성표 점수 / 문장 → CSV 태그 점수 → 상위 8곳
-  3) AI 분석    : Ollama(qwen2.5:7b)가 성향을 요약하고 후보 중 5곳을 골라 추천 이유 작성
+  3) AI 분석    : OpenAI(GPT) 또는 Ollama(qwen2.5:7b)가 성향을 요약하고 후보 중 5곳을 골라 추천 이유 작성
+                  (LOCALRISE_LLM=openai / ollama 로 선택. 키는 .env 파일에만 넣는다)
   4) 검증·보정  : 없는 장소/중복 제거, 근거 없는 문장 제거, 3문장 미만이면 CSV 원문으로 보충
   5) 응답       : { region_id, persona_summary, recommendations[5] }
 
@@ -25,7 +26,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
-from ollama import Client
 
 # =========================================================
 # 1. 설정
@@ -38,6 +38,25 @@ def path(*parts: str) -> str:
     return os.path.join(BASE_DIR, *parts)
 
 
+def load_dotenv_file() -> None:
+    """agent/.env 또는 저장소 루트 .env 를 읽어 환경변수로 넣는다. (이미 설정된 값은 그대로 둠)"""
+    for p in (path(".env"), path("..", ".env")):
+        if not os.path.exists(p):
+            continue
+        with open(p, encoding="utf-8-sig") as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("#") or "=" not in line:
+                    continue
+                k, v = line.split("=", 1)
+                k, v = k.strip(), v.strip().strip('"').strip("'")
+                if k and v and k not in os.environ:
+                    os.environ[k] = v
+
+
+load_dotenv_file()
+
+
 REGION_ID = "GIMHAE"
 
 CSV_PATH = path("gimhae_places.csv")
@@ -47,8 +66,17 @@ POI_PATH = path("poi_config.json")
 STATIC_DIR = path("static")
 CACHE_DIR = path("cache")
 
+# AI 선택: openai (GPT) / ollama (내 컴퓨터 qwen2.5:7b)
+#   LOCALRISE_LLM 을 안 정하면: OPENAI_API_KEY 가 있으면 openai, 없으면 ollama
+LLM_BACKEND = os.environ.get(
+    "LOCALRISE_LLM", "openai" if os.environ.get("OPENAI_API_KEY") else "ollama").strip().lower()
+if LLM_BACKEND not in ("openai", "ollama"):
+    LLM_BACKEND = "ollama"
+OPENAI_MODEL = os.environ.get("LOCALRISE_OPENAI_MODEL", "gpt-4o-mini")
+
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
 OLLAMA_MODEL = os.environ.get("LOCALRISE_MODEL", "qwen2.5:7b")
+LLM_MODEL = OPENAI_MODEL if LLM_BACKEND == "openai" else OLLAMA_MODEL
 LLM_TIMEOUT = float(os.environ.get("LOCALRISE_LLM_TIMEOUT", "90"))  # 초. 넘으면 CSV 기반으로 대체
 OLLAMA_OPTIONS = {
     "temperature": 0,      # 같은 입력 → 같은 결과 (제출 JSON 재현성)
@@ -114,10 +142,12 @@ PLACE_TEXT = {pid: " ".join(rec.values()) for pid, rec in PLACES.items()}
 
 # 데이터 버전: CSV·질문·특성표·지시문이 바뀌면 캐시가 자동으로 새로 만들어진다
 DATA_VERSION = hashlib.md5(
-    (file_md5(CSV_PATH) + file_md5(QUIZ_PATH) + file_md5(TRAITS_PATH) + PROMPT_VERSION + SELECT_MODE).encode()
+    (file_md5(CSV_PATH) + file_md5(QUIZ_PATH) + file_md5(TRAITS_PATH) + PROMPT_VERSION + SELECT_MODE
+     + LLM_BACKEND + LLM_MODEL).encode()   # AI 종류·모델별로 캐시를 따로 저장 (섞이지 않게)
 ).hexdigest()[:10]
 
-print(f"[LocalRise] 관광지 {len(PLACES)}곳, 질문 {len(QUESTIONS)}개, 추천 방식 {SELECT_MODE}, 데이터 버전 {DATA_VERSION}")
+print(f"[LocalRise] 관광지 {len(PLACES)}곳, 질문 {len(QUESTIONS)}개, 추천 방식 {SELECT_MODE}, "
+      f"AI {LLM_BACKEND}({LLM_MODEL}), 데이터 버전 {DATA_VERSION}")
 
 
 # =========================================================
@@ -350,8 +380,56 @@ def fallback_persona(answers: Optional[Dict[str, str]]) -> str:
 # 7. AI 호출
 # =========================================================
 
-_client = Client(host=OLLAMA_HOST, timeout=LLM_TIMEOUT)
-LLM_LOCK = threading.Lock()   # 노트북 GPU 1대: AI 생성은 한 번에 하나씩
+LLM_LOCK = threading.Lock()   # AI 생성은 한 번에 하나씩 (같은 입력이면 같은 결과 + 비용·GPU 보호)
+_ollama_client = None
+_openai_client = None
+
+
+def ollama_client():
+    global _ollama_client
+    if _ollama_client is None:
+        from ollama import Client   # Ollama를 안 쓰면 설치 안 해도 되게, 필요할 때만 불러온다
+        _ollama_client = Client(host=OLLAMA_HOST, timeout=LLM_TIMEOUT)
+    return _ollama_client
+
+
+def openai_client():
+    global _openai_client
+    if _openai_client is None:
+        if not os.environ.get("OPENAI_API_KEY"):
+            raise RuntimeError("OPENAI_API_KEY가 없습니다. agent/.env 에 키를 넣어 주세요.")
+        from openai import OpenAI
+        _openai_client = OpenAI(timeout=LLM_TIMEOUT, max_retries=1)
+    return _openai_client
+
+
+def llm_generate(system: str, prompt: str) -> str:
+    """선택된 AI에 JSON 답을 요청하고 글자 그대로 돌려준다."""
+    if LLM_BACKEND == "openai":
+        resp = openai_client().chat.completions.create(
+            model=OPENAI_MODEL,
+            messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+            response_format={"type": "json_object"},
+            temperature=0, seed=42,   # 같은 입력 → 최대한 같은 결과 (최종 고정은 캐시로)
+            max_tokens=1500,
+        )
+        return resp.choices[0].message.content or ""
+    resp = ollama_client().generate(
+        model=OLLAMA_MODEL, system=system, prompt=prompt,
+        format="json", options=OLLAMA_OPTIONS, keep_alive=KEEP_ALIVE,
+    )
+    return resp["response"] if isinstance(resp, dict) else resp.response
+
+
+def llm_ok() -> bool:
+    """/health 용: AI에 연결할 수 있는지."""
+    try:
+        if LLM_BACKEND == "openai":
+            return bool(os.environ.get("OPENAI_API_KEY"))   # 호출 비용을 아끼려고 키 유무만 확인
+        ollama_client().list()
+        return True
+    except Exception:
+        return False
 
 
 def label_of(qid: str, choice: str) -> str:
@@ -461,11 +539,7 @@ def call_llm(user_text: str, shown_ids: list, notes_fn, exclude: list) -> dict:
         f"위 후보 중 {TARGET_COUNT}곳을 골라 JSON으로만 답하라."
     )
     with LLM_LOCK:
-        resp = _client.generate(
-            model=OLLAMA_MODEL, system=SYSTEM_PROMPT, prompt=prompt,
-            format="json", options=OLLAMA_OPTIONS, keep_alive=KEEP_ALIVE,
-        )
-    text = resp["response"] if isinstance(resp, dict) else resp.response
+        text = llm_generate(SYSTEM_PROMPT, prompt)
     return parse_llm_json(text)
 
 
@@ -676,11 +750,17 @@ def public(result: dict) -> dict:
 # =========================================================
 
 def warmup():
-    """서버 시작 시 AI 모델을 미리 메모리에 올려 첫 관람객 대기 시간을 줄인다."""
+    """서버 시작 시 AI 준비 상태 확인. Ollama는 모델을 미리 메모리에 올려 첫 관람객 대기 시간을 줄인다."""
+    if LLM_BACKEND == "openai":
+        if os.environ.get("OPENAI_API_KEY"):
+            print(f"[LocalRise] AI 준비 완료 (OpenAI {OPENAI_MODEL})")
+        else:
+            print("[LocalRise] OPENAI_API_KEY가 없습니다. agent/.env 확인 (지금은 CSV 기반 대체 문장으로 동작)")
+        return
     try:
-        _client.generate(model=OLLAMA_MODEL, prompt="안녕", options={"num_predict": 1},
-                         keep_alive=KEEP_ALIVE)
-        print("[LocalRise] AI 모델 준비 완료")
+        ollama_client().generate(model=OLLAMA_MODEL, prompt="안녕", options={"num_predict": 1},
+                                 keep_alive=KEEP_ALIVE)
+        print("[LocalRise] AI 모델 준비 완료 (Ollama)")
     except Exception as e:
         print(f"[LocalRise] AI 모델 준비 실패 (Ollama 실행 여부 확인): {e}")
 
@@ -730,13 +810,10 @@ def index():
 
 @app.get("/health")
 def health():
-    ollama_ok = True
-    try:
-        _client.list()
-    except Exception:
-        ollama_ok = False
+    ok = llm_ok()
     return {"status": "ok", "region_id": REGION_ID, "places": len(PLACES),
-            "questions": len(QUESTIONS), "ollama": ollama_ok, "model": OLLAMA_MODEL,
+            "questions": len(QUESTIONS), "llm": LLM_BACKEND, "llm_ok": ok, "model": LLM_MODEL,
+            "ollama": ok if LLM_BACKEND == "ollama" else None,
             "select_mode": SELECT_MODE,
             "cache_entries": len(CACHE), "data_version": DATA_VERSION}
 

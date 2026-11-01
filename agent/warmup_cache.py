@@ -32,11 +32,13 @@ def post(path, body):
 def main():
     health = get("/health")
     mode = health.get("select_mode", "?")
-    if not health.get("ollama"):
-        print("※ Ollama 연결이 안 됩니다. Ollama를 켜고 다시 실행하세요. (지금 결과는 캐시에 저장되지 않음)")
+    print(f"AI: {health.get('llm')} ({health.get('model')})")
+    if not health.get("llm_ok"):
+        print("※ AI 연결이 안 됩니다. OpenAI면 agent/.env 의 OPENAI_API_KEY, Ollama면 Ollama 실행 여부를 확인하세요. "
+              "(지금 결과는 캐시에 저장되지 않음)")
     qids = [q["id"] for q in get("/quiz")["questions"]]
     combos = ["".join(c) for c in itertools.product("AB", repeat=len(qids))]
-    print(f"추천 방식: {mode} / 총 {len(combos)}가지 조합 (조합당 약 10~40초, 처음 1회만)")
+    print(f"추천 방식: {mode} / 총 {len(combos)}가지 조합 (처음 1회만, Ollama는 조합당 10~40초)")
 
     t_all = time.time()
     sets, place_cnt, pos_cnt, rank_cnt, src_cnt = set(), collections.Counter(), collections.Counter(), collections.Counter(), collections.Counter()

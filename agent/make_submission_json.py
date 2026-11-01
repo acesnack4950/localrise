@@ -49,7 +49,7 @@ def main():
     for i, r in enumerate(out["recommendations"], 1):
         print(f"{i}. {r['place_id']} {r['place_name']}")
     if data.get("source") != "ai":
-        print(f"※ 생성 방식이 '{data.get('source')}' 입니다. Ollama가 켜져 있는지 확인 후 다시 실행하세요.")
+        print(f"※ 생성 방식이 '{data.get('source')}' 입니다. AI 연결(.env의 OPENAI_API_KEY 또는 Ollama)을 확인 후 다시 실행하세요.")
     print(f"저장 완료: {OUT_FILE}")
 
 

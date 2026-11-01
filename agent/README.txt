@@ -16,9 +16,25 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
   cache/                  (자동 생성) 미리 만든 추천 결과 저장
 
 
+0. AI 선택: OpenAI(주최측 키) / Ollama
+---------------------------------------
+  agent 폴더에 .env 파일을 만들고 아래처럼 적는다. (.env 는 GitHub에 안 올라감)
+
+    LOCALRISE_LLM=openai
+    OPENAI_API_KEY=여기에_받은_키
+
+  - Ollama로 돌리려면 LOCALRISE_LLM=ollama (Ollama 실행 + qwen2.5:7b 필요)
+  - 모델 변경: LOCALRISE_OPENAI_MODEL=gpt-4o-mini (기본값)
+  - 캐시는 AI 종류·모델별로 따로 저장됨 → OpenAI로 바꾸면 warmup_cache.py 와
+    make_submission_json.py 를 OpenAI로 다시 실행해서 02 JSON을 새로 만들 것
+    (제출한 02 JSON과 API 결과가 같아야 함)
+  - 키가 없거나 인터넷이 끊기면: 서버는 안 멈추고 CSV 근거 문장으로 5곳 생성 (source: fallback)
+  - 상태 확인: http://localhost:5000/health → "llm": "openai", "llm_ok": true
+
+
 1. 처음 설치 (Windows, 한 번만)
 -------------------------------
-  준비물: Python 3.12, Ollama (qwen2.5:7b 받아 둔 상태)
+  준비물: Python 3.12 (Ollama를 쓸 때만: Ollama + qwen2.5:7b)
 
   PowerShell에서 이 폴더로 이동 후:
     py -3.12 -m venv .venv
@@ -36,12 +52,12 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
     python app.py
 
   "Uvicorn running on http://0.0.0.0:5000" 이 보이면 성공.
-  "[LocalRise] AI 모델 준비 완료" 가 뜨면 AI도 메모리에 올라간 상태.
+  "[LocalRise] AI 준비 완료" 가 뜨면 AI 연결 준비 끝.
 
   확인할 주소 (브라우저)
     http://localhost:5000/                              질문 테스트 화면
     http://localhost:5000/docs                          API 직접 테스트
-    http://localhost:5000/health                        상태 점검 (ollama: true 여야 함)
+    http://localhost:5000/health                        상태 점검 (llm_ok: true 여야 함)
     http://localhost:5000/current_region?region_id=GIMHAE   Re:Local 연계 API
 
 
@@ -161,6 +177,6 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
 8. 문제 해결
 ------------
   ModuleNotFoundError        → .venv 활성화 확인 후 pip install -r requirements.txt
-  /health 에서 ollama:false  → Ollama 앱 실행, "ollama list"에 qwen2.5:7b 있는지 확인
+  /health 에서 llm_ok:false  → OpenAI: agent/.env 의 OPENAI_API_KEY 확인 / Ollama: 앱 실행, "ollama list" 확인
   source 가 fallback 만 나옴 → 위와 동일 (AI 연결 안 됨)
   같은 PC 다른 기기에서 접속 → http://노트북IP:5000 , Windows 방화벽에서 5000 포트 허용
