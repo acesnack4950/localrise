@@ -1,0 +1,48 @@
+# ===== 비밀값 (절대 올리지 않기) =====
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# ===== AI 모델·대용량 파일 (GitHub에 올리면 안 됨) =====
+*.safetensors
+*.ckpt
+*.pt
+*.pth
+*.bin
+*.onnx
+models/
+loras/
+checkpoints/
+
+# ===== 생성 결과물 (이미지·영상) =====
+outputs/
+output/
+generated/
+*.mp4
+*.mov
+*.webm
+*.gif
+
+# ===== 학습 데이터셋 =====
+datasets/
+dataset/
+
+# ===== Python =====
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# ===== Node / 프론트엔드 =====
+node_modules/
+dist/
+build/
+
+# ===== 에디터·OS =====
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
