@@ -800,6 +800,12 @@ def with_media(result: dict) -> dict:
     return out
 
 
+import video_jobs  # noqa: E402  (시연 화면 STEP 3: 장소 영상 작업 등록·상태 확인)
+
+video_jobs.setup(PLACES, POI, media_urls)
+app.include_router(video_jobs.router)
+
+
 @app.get("/", include_in_schema=False)
 def index():
     page = path("static", "index.html")
