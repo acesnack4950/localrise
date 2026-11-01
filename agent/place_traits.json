@@ -1,0 +1,23 @@
+{
+  "_설명": "질문별 장소 특성. A/B = 해당 선택지와 잘 맞음, N = 중립. 근거는 CSV evidence_text.",
+  "GIMHAE_001": {"with":"N","theme":"A","mood":"A","fun":"A","move":"A","time":"A","keep":"A"},
+  "GIMHAE_002": {"with":"N","theme":"A","mood":"A","fun":"A","move":"A","time":"A","keep":"A"},
+  "GIMHAE_003": {"with":"A","theme":"A","mood":"A","fun":"A","move":"A","time":"N","keep":"N"},
+  "GIMHAE_004": {"with":"A","theme":"A","mood":"A","fun":"A","move":"A","time":"A","keep":"N"},
+  "GIMHAE_005": {"with":"N","theme":"A","mood":"A","fun":"A","move":"A","time":"A","keep":"N"},
+  "GIMHAE_006": {"with":"N","theme":"N","mood":"A","fun":"B","move":"A","time":"A","keep":"A"},
+  "GIMHAE_007": {"with":"A","theme":"A","mood":"B","fun":"B","move":"A","time":"A","keep":"A"},
+  "GIMHAE_008": {"with":"N","theme":"B","mood":"A","fun":"N","move":"A","time":"B","keep":"A"},
+  "GIMHAE_009": {"with":"N","theme":"N","mood":"A","fun":"N","move":"B","time":"N","keep":"A"},
+  "GIMHAE_010": {"with":"N","theme":"N","mood":"A","fun":"N","move":"N","time":"A","keep":"N"},
+  "GIMHAE_011": {"with":"N","theme":"B","mood":"B","fun":"B","move":"B","time":"A","keep":"A"},
+  "GIMHAE_012": {"with":"N","theme":"B","mood":"B","fun":"B","move":"N","time":"A","keep":"A"},
+  "GIMHAE_013": {"with":"A","theme":"B","mood":"A","fun":"A","move":"A","time":"A","keep":"A"},
+  "GIMHAE_014": {"with":"A","theme":"N","mood":"A","fun":"A","move":"A","time":"B","keep":"N"},
+  "GIMHAE_015": {"with":"N","theme":"N","mood":"B","fun":"B","move":"B","time":"A","keep":"N"},
+  "GIMHAE_016": {"with":"A","theme":"B","mood":"N","fun":"B","move":"B","time":"A","keep":"N"},
+  "GIMHAE_017": {"with":"N","theme":"N","mood":"B","fun":"N","move":"A","time":"N","keep":"B"},
+  "GIMHAE_018": {"with":"N","theme":"B","mood":"A","fun":"N","move":"B","time":"A","keep":"A"},
+  "GIMHAE_019": {"with":"N","theme":"N","mood":"B","fun":"N","move":"A","time":"B","keep":"B"},
+  "GIMHAE_020": {"with":"N","theme":"A","mood":"A","fun":"A","move":"N","time":"A","keep":"N"}
+}
