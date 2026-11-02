@@ -1,91 +1,253 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LocalRise 김해 여행 성향 테스트</title>
+<title>LocalRise · 나에게 맞는 김해 여행</title>
+<!-- 전시장 인터넷이 끊겨도 동작하도록 외부 폰트·스크립트를 쓰지 않는다 -->
 <style>
-  :root { --bg:#f6f3ee; --card:#fff; --ink:#1f2a24; --sub:#6b7570; --accent:#2f6b4f; --accent2:#e6efe9; --line:#e2ddd4; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
-  .wrap { max-width:760px; margin:0 auto; padding:32px 16px 64px; }
-  h1 { font-size:26px; margin:0 0 4px; } .lead { color:var(--sub); margin:0 0 24px; }
-  .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:24px; }
-  .bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .25s; }
-  .q { background:var(--card); border-radius:16px; padding:28px 20px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-  .q h2 { font-size:21px; margin:0 0 20px; text-align:center; }
-  .opts { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .opt { border:2px solid var(--line); background:#fff; border-radius:12px; padding:22px 12px; font-size:17px; cursor:pointer; color:var(--ink); }
-  .opt:hover { border-color:var(--accent); background:var(--accent2); }
-  .muted { color:var(--sub); font-size:14px; text-align:center; margin-top:14px; }
-  .persona { background:var(--accent); color:#fff; border-radius:16px; padding:20px; margin-bottom:18px; font-size:17px; line-height:1.6; }
-  .rec { background:var(--card); border-radius:14px; padding:18px; margin-bottom:12px; display:grid; grid-template-columns:120px 1fr; gap:16px; }
-  .rec .media { width:120px; height:90px; border-radius:10px; background:var(--accent2); object-fit:cover; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:12px; }
-  .rec h3 { margin:0 0 6px; font-size:18px; } .rec p { margin:0 0 8px; line-height:1.6; font-size:15px; }
-  .tag { display:inline-block; background:var(--accent2); color:var(--accent); border-radius:999px; padding:2px 10px; font-size:13px; margin-right:4px; }
-  .btn { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 18px; font-size:16px; cursor:pointer; margin-top:8px; }
-  .meta { color:var(--sub); font-size:13px; margin-top:12px; }
-  .spin { width:36px; height:36px; border:4px solid var(--line); border-top-color:var(--accent); border-radius:50%; margin:24px auto; animation:r 1s linear infinite; }
-  @keyframes r { to { transform:rotate(360deg); } }
-  @media (max-width:520px) { .opts { grid-template-columns:1fr; } .rec { grid-template-columns:1fr; } .rec .media { width:100%; height:160px; } }
+  :root { --g:#2e6b4f; --g2:#3a8160; --gl:#eef4ee; --y:#f4b82b; --yl:#fdf1d2; --clay:#cfc8b2; --line:#e6dfcc; --text:#1f2421; --muted:#6b6a60; --night:#23251f; }
+  * { box-sizing:border-box; margin:0; }
+  body { font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif; color:var(--text);
+         background:#faf6ec; min-height:100vh; padding:20px 28px 40px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:18px; }
+  h1 { font-size:1.8rem; font-weight:900; } h1 span { color:var(--g); }
+  .sub { color:var(--g); font-weight:600; margin-top:6px; }
+  .bot { display:flex; align-items:center; gap:10px; }
+  .bot img { width:92px; height:92px; object-fit:contain; }
+  .bubble { background:#fff; border:1px solid var(--line); border-radius:14px; padding:10px 14px; font-size:.9rem; color:var(--muted); max-width:280px; line-height:1.5; }
+  .grid { display:grid; grid-template-columns:1fr 1.15fr 0.9fr; gap:18px; align-items:start; }
+  .panel { background:#fff; border:1.5px solid var(--line); border-radius:18px; padding:20px; box-shadow:0 4px 18px rgba(60,50,20,.05); }
+  .step { display:inline-block; background:var(--y); color:var(--text); font-size:.75rem; font-weight:700; padding:3px 9px; border-radius:6px; margin-right:8px; }
+  .ptitle { font-weight:800; font-size:1.1rem; } .psub { color:var(--muted); font-size:.85rem; margin:6px 0 16px; }
+  .bar { height:8px; background:var(--gl); border-radius:99px; overflow:hidden; margin-bottom:8px; }
+  .bar i { display:block; height:100%; width:0; background:var(--y); transition:width .3s; }
+  .count { text-align:right; color:var(--muted); font-size:.85rem; margin-bottom:10px; }
+  .q { font-weight:800; font-size:1.25rem; margin:4px 0 16px; line-height:1.4; display:flex; align-items:center; gap:10px; }
+  .q img { width:64px; flex:none; }
+  .mascot { display:block; margin:0 auto 12px; width:130px; }
+  .persona-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; } .persona-row img { width:70px; flex:none; } .persona-row .persona { margin:0; flex:1; }
+  .phone .msg img { width:150px; display:block; margin:0 auto 14px; }
+  .opts { display:grid; gap:12px; }
+  .opts button, .ghost { min-height:72px; padding:16px 14px; border:2px solid var(--line); background:#fff; border-radius:14px;
+         font:inherit; font-size:1.1rem; font-weight:600; cursor:pointer; color:var(--text); transition:.15s; }
+  .opts button:hover, .opts button:active, .ghost:hover { border-color:var(--y); background:var(--yl); }
+  .back { margin-top:12px; background:none; border:0; color:var(--muted); font:inherit; cursor:pointer; text-decoration:underline; }
+  .primary { width:100%; min-height:60px; border:0; border-radius:14px; background:var(--g); color:#fff; font:inherit; font-weight:800; font-size:1.05rem; cursor:pointer; }
+  .primary:hover { background:var(--g2); } .primary:disabled { background:#b7cdc1; cursor:not-allowed; }
+  .profile { margin-top:18px; padding-top:16px; border-top:1px dashed var(--line); }
+  .profile b { font-size:.95rem; display:block; margin-bottom:10px; text-align:center; }
+  .persona { background:var(--g); color:#fff; border-radius:14px; padding:14px 16px; line-height:1.6; font-size:1rem; margin-bottom:10px; }
+  .tag { display:inline-block; background:var(--yl); color:#7a5a10; border-radius:99px; font-size:.8rem; padding:4px 10px; margin:2px; }
+  .empty { color:var(--muted); text-align:center; padding:56px 10px; font-size:1rem; line-height:1.8; }
+  .spinner { width:38px; height:38px; border:4px solid var(--gl); border-top-color:var(--g); border-radius:50%; animation:spin 1s linear infinite; margin:0 auto 14px; }
+  #list { display:grid; gap:10px; margin-bottom:14px; }
+  .card { display:grid; grid-template-columns:92px 1fr; gap:12px; padding:10px; border:2px solid var(--line); border-radius:14px;
+          cursor:pointer; transition:.15s; animation:fade .4s ease both; text-align:left; background:#fff; font:inherit; color:inherit; }
+  .card:hover { border-color:var(--clay); } .card.sel { border-color:var(--y); background:#fffaf0; }
+  .thumb { width:92px; height:92px; border-radius:10px; object-fit:cover; display:grid; place-items:center; color:#fff; font-weight:900; font-size:1.7rem; }
+  .card h3 { font-size:1.05rem; margin-bottom:4px; } .card h3 small { color:var(--g); font-weight:800; margin-right:4px; }
+  .card p { color:var(--muted); font-size:.85rem; line-height:1.5; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+  .card.sel p { -webkit-line-clamp:unset; color:var(--text); }
+  .phone { position:relative; aspect-ratio:9/16; max-height:620px; margin:0 auto; border-radius:20px; overflow:hidden; background:#f3eee0;
+           border:6px solid var(--night); display:grid; place-items:center; color:var(--text); text-align:center; }
+  .phone video, .phone #still { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:none; }
+  .phone .msg { padding:24px; font-size:1rem; line-height:1.7; opacity:.92; z-index:1; }
+  .caption { position:absolute; left:16px; right:16px; bottom:16px; text-align:left; font-size:.95rem; line-height:1.5; color:#fff;
+             text-shadow:0 1px 6px #000; display:none; z-index:2; }
+  .caption b { font-size:1.2rem; }
+  .debug { margin-top:14px; font-size:.75rem; color:var(--muted); }
+  .credit { margin-top:16px; font-size:.75rem; color:var(--muted); text-align:center; }
+  @keyframes fade { from { opacity:0; transform:translateY(8px); } } @keyframes spin { to { transform:rotate(360deg); } }
+  @media (max-width:1000px) { .grid { grid-template-columns:1fr; } .bubble { display:none; } .phone { max-height:520px; } }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>나에게 맞는 김해 여행지는?</h1>
-  <p class="lead">둘 중 더 끌리는 쪽을 골라 주세요. AI가 성향을 분석해 5곳을 추천합니다.</p>
-  <div class="bar"><i id="bar"></i></div>
-  <div id="app"><div class="spin"></div></div>
-</div>
-<script>
-// 이 페이지는 API 동작 확인용 테스트 화면입니다. 팀 프론트엔드는 같은 API(/quiz, /recommend_quiz)를 호출하면 됩니다.
-const el = document.getElementById("app"), bar = document.getElementById("bar");
-let questions = [], answers = {}, idx = 0;
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+<header>
+  <div>
+    <h1>AI 에이전트와 함께하는 <span>나만의 김해 여행</span></h1>
+    <p class="sub">질문 7개로 여행 성향을 분석하고, 딱 맞는 김해 여행지 5곳과 영상을 보여 드려요</p>
+  </div>
+  <div class="bot"><div class="bubble">안녕하세요, 김해의 토더기예요! 둘 중 더 끌리는 쪽을 골라 주면 김해 여행 코스를 짜 드릴게요.</div><img src="/static/brand/todeogi_hello.png" alt="" onerror="this.remove()"></div>
+</header>
 
-async function start() {
+<div class="grid">
+  <section class="panel">
+    <div><span class="step">STEP 1</span><span class="ptitle">나를 알려 주세요</span></div>
+    <p class="psub">둘 중 더 끌리는 쪽을 눌러 주세요</p>
+    <div id="surveyBox"><div class="spinner"></div></div>
+    <div class="profile"><b>분석된 나의 여행 프로필</b><div id="profile"><p class="psub" style="text-align:center">질문에 답하면 채워져요</p></div></div>
+  </section>
+
+  <section class="panel">
+    <div><span class="step">STEP 2</span><span class="ptitle">AI 추천 여행지 BEST 5</span></div>
+    <p class="psub">카드를 누르면 오른쪽에서 그 장소를 볼 수 있어요</p>
+    <div id="recoBox"><div class="empty">질문을 마치면<br>추천 여행지가 나타나요</div></div>
+  </section>
+
+  <section class="panel">
+    <div><span class="step">STEP 3</span><span class="ptitle">미리 떠나는 여행 영상</span></div>
+    <p class="psub">AI가 만든 장소 영상</p>
+    <div class="phone">
+      <div class="msg" id="phoneMsg"><img src="/static/brand/todeogi_camera.png" alt="" onerror="this.remove()">추천 여행지를 고르면<br>여기에서 볼 수 있어요</div>
+      <img id="still" alt="">
+      <video id="player" playsinline muted loop></video>
+      <div class="caption" id="caption"></div>
+    </div>
+  </section>
+</div>
+<p class="credit">캐릭터: 김해시 마스코트 토더기 (김해시 사용 허락)</p>
+<div class="debug" id="debug" hidden></div>
+
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const COLORS = ["#2f8f5b", "#3b7fb5", "#c47f2c", "#7a5bb5", "#b5476b"];
+const DEBUG = new URLSearchParams(location.search).has("debug");   // 주소 끝에 ?debug 붙이면 생성 방식 표시
+const IMG = n => `<img src="/static/brand/todeogi_${n}.png" alt="" onerror="this.remove()">`;
+const IDLE_RESET_MS = 120000;   // 결과 화면에서 2분 동안 아무도 안 만지면 처음으로 (전시용)
+
+async function api(url, body) {
+  const res = await fetch(url, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : undefined);
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || res.status);
+  return res.json();
+}
+
+let questions = [], answers = {}, idx = 0, places = [], selected = 0, sessionId = "", viewToken = 0, idleTimer = null;
+const tasks = {};   // place_id -> {task_id, result}
+
+// ---------- STEP 1 질문 ----------
+async function startSurvey() {
+  clearTimeout(idleTimer);
+  answers = {}; idx = 0; places = []; viewToken++;
+  for (const k in tasks) delete tasks[k];
+  sessionId = "s_" + Math.random().toString(36).slice(2, 10);
+  $("recoBox").innerHTML = '<div class="empty">질문을 마치면<br>추천 여행지가 나타나요</div>';
+  $("profile").innerHTML = '<p class="psub" style="text-align:center">질문에 답하면 채워져요</p>';
+  resetPhone(IMG("camera") + "추천 여행지를 고르면<br>여기에서 볼 수 있어요");
   try {
-    questions = (await (await fetch("/quiz")).json()).questions;
-    answers = {}; idx = 0; showQ();
-  } catch (e) { el.innerHTML = `<p class="muted">질문을 불러오지 못했습니다: ${esc(e)}</p>`; }
+    if (!questions.length) questions = (await api("/quiz")).questions;
+    renderQuestion();
+  } catch (e) {
+    $("surveyBox").innerHTML = `<div class="empty">질문을 불러오지 못했어요.<br>잠시 후 다시 시도해 주세요.</div><button class="primary" onclick="startSurvey()">다시 시도</button>`;
+  }
 }
-function showQ() {
-  bar.style.width = (idx / questions.length * 100) + "%";
+
+function renderQuestion() {
   const q = questions[idx];
-  el.innerHTML = `<div class="q"><h2>${esc(q.text)}</h2><div class="opts">
-    <button class="opt" data-v="A">${esc(q.options.A.label)}</button>
-    <button class="opt" data-v="B">${esc(q.options.B.label)}</button></div>
-    <p class="muted">${idx + 1} / ${questions.length}</p></div>`;
-  el.querySelectorAll(".opt").forEach(b => b.onclick = () => pick(q.id, b.dataset.v));
+  $("surveyBox").innerHTML = `<div class="bar"><i style="width:${idx / questions.length * 100}%"></i></div>
+    <div class="count">${idx + 1} / ${questions.length}</div>
+    <div class="q">${IMG("curious")}<span>${esc(q.text)}</span></div>
+    <div class="opts">
+      <button data-v="A">${esc(q.options.A.label)}</button>
+      <button data-v="B">${esc(q.options.B.label)}</button>
+    </div>${idx ? '<button class="back" id="back">← 이전 질문</button>' : ""}`;
+  $("surveyBox").querySelectorAll(".opts button").forEach(b => b.onclick = () => pick(q.id, b.dataset.v));
+  if (idx) $("back").onclick = () => { idx--; delete answers[questions[idx].id]; renderProfileTags(); renderQuestion(); };
 }
+
+function renderProfileTags() {
+  const tags = questions.filter(q => answers[q.id]).map(q => `<span class="tag">#${esc(q.options[answers[q.id]].label)}</span>`);
+  $("profile").innerHTML = tags.length ? `<div style="text-align:center">${tags.join("")}</div>` : '<p class="psub" style="text-align:center">질문에 답하면 채워져요</p>';
+}
+
 function pick(id, v) {
-  answers[id] = v; idx++;
-  idx < questions.length ? showQ() : submit();
+  answers[id] = v; idx++; renderProfileTags();
+  idx < questions.length ? renderQuestion() : submit();
 }
+
 async function submit() {
-  bar.style.width = "100%";
-  el.innerHTML = `<div class="spin"></div><p class="muted">AI가 여행 성향을 분석하고 있어요…</p>`;
+  $("surveyBox").innerHTML = '<div class="bar"><i style="width:100%"></i></div><div class="empty">답변 완료!<br>AI가 여행 성향을 분석하고 있어요</div>';
+  $("recoBox").innerHTML = `<div class="empty"><img class="mascot" src="/static/brand/todeogi_magic.png" alt="" onerror="this.remove()">토더기가 김해 여행지를 고르는 중이에요<br><small>잠시만 기다려 주세요</small></div>`;
   const t0 = performance.now();
   try {
-    const res = await fetch("/recommend_quiz", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({answers}) });
-    if (!res.ok) throw new Error((await res.json()).detail || res.status);
-    showResult(await res.json(), ((performance.now() - t0) / 1000).toFixed(1));
-  } catch (e) { el.innerHTML = `<p class="muted">추천 실패: ${esc(e.message)}</p><button class="btn" onclick="start()">다시 하기</button>`; }
+    const d = await api("/recommend_quiz", { answers });
+    places = d.recommendations;
+    $("profile").innerHTML = `<div class="persona-row">${IMG("thumbsup")}<div class="persona">${esc(d.persona_summary)}</div></div>` + $("profile").innerHTML;
+    $("surveyBox").innerHTML = '<div class="empty">딱 맞는 여행지를 찾았어요!</div><button class="ghost" style="width:100%" id="restart">처음부터 다시 하기</button>';
+    $("restart").onclick = startSurvey;
+    if (DEBUG) { $("debug").hidden = false; $("debug").textContent = `생성 방식: ${d.source} · 응답 ${((performance.now() - t0) / 1000).toFixed(1)}초 · 답: ${Object.values(answers).join("")}`; }
+    selected = 0; renderList(); showPlace(places[0]);
+    places.slice(1).forEach(p => ensureTask(p).catch(() => {}));   // 나머지 장소도 미리 준비
+    armIdleReset();
+  } catch (e) {
+    $("recoBox").innerHTML = `<div class="empty">추천을 만들지 못했어요.<br>잠시 후 다시 시도해 주세요.</div>`;
+    $("surveyBox").innerHTML = '<button class="primary" id="retry">처음부터 다시 하기</button>';
+    $("retry").onclick = startSurvey;
+  }
 }
-function media(r) {
-  if (r.video_url) return `<video class="media" src="${esc(r.video_url)}" autoplay muted loop playsinline></video>`;
-  if (r.image_url) return `<img class="media" src="${esc(r.image_url)}" alt="${esc(r.place_name)}">`;
-  return `<div class="media">이미지 준비 중</div>`;
+
+// ---------- STEP 2 추천 카드 ----------
+function thumb(p, i) {
+  return p.image_url
+    ? `<img class="thumb" src="${esc(p.image_url)}" alt="${esc(p.place_name)}">`
+    : `<div class="thumb" style="background:linear-gradient(135deg,${COLORS[i % 5]},#0f3d28)">${i + 1}</div>`;
 }
-function showResult(d, sec) {
-  el.innerHTML = `<div class="persona">${esc(d.persona_summary)}</div>` +
-    d.recommendations.map((r, i) => `<div class="rec">${media(r)}<div>
-      <h3>${i + 1}. ${esc(r.place_name)}</h3><p>${esc(r.recommend_reason)}</p>
-      ${(r.matching_tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join("")}</div></div>`).join("") +
-    `<button class="btn" onclick="start()">처음부터 다시</button>
-     <p class="meta">응답 ${sec}초 · 생성 방식: ${esc(d.source)} · 답: ${esc(Object.values(d.answers || {}).join(""))}</p>`;
+
+function renderList() {
+  $("recoBox").innerHTML = '<div id="list"></div>';
+  places.forEach((p, i) => {
+    const el = document.createElement("button");
+    el.className = "card" + (i === selected ? " sel" : "");
+    el.style.animationDelay = `${i * 0.08}s`;
+    el.innerHTML = `${thumb(p, i)}<div><h3><small>${i + 1}</small>${esc(p.place_name)}</h3><p>${esc(p.recommend_reason)}</p>
+      <div>${(p.matching_tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join("")}</div></div>`;
+    el.onclick = () => { selected = i; renderList(); showPlace(p); armIdleReset(); };
+    $("list").appendChild(el);
+  });
 }
-start();
+
+// ---------- STEP 3 영상 ----------
+function resetPhone(msg) {
+  const v = $("player"); v.pause(); v.removeAttribute("src"); v.style.display = "none";
+  $("still").style.display = "none"; $("caption").style.display = "none";
+  $("phoneMsg").style.display = "block"; $("phoneMsg").innerHTML = msg;
+}
+
+async function ensureTask(p) {
+  let t = tasks[p.place_id];
+  if (!t) {
+    const res = await api("/api/videos", { place_id: p.place_id, session_id: sessionId });
+    t = tasks[p.place_id] = { task_id: res.task_id, result: null };
+  }
+  return t;
+}
+
+async function showPlace(p) {
+  const token = ++viewToken;
+  resetPhone(`${IMG("travel")}${esc(p.place_name)}<br>영상 준비 중...`);
+  try {
+    const t = await ensureTask(p);
+    for (let tries = 0; tries < 60 && !t.result; tries++) {   // 최대 약 2분 기다림
+      const s = await api(`/api/video-status/${t.task_id}`);
+      if (s.status === "succeeded") { t.result = s.result; break; }
+      if (s.status === "not_ready") break;
+      if (token !== viewToken) return;
+      await new Promise(r => setTimeout(r, 2000));
+    }
+    if (token !== viewToken) return;
+    const r = t.result || {};
+    $("phoneMsg").style.display = "none";
+    if (r.video_url) {
+      const v = $("player"); v.src = r.video_url; v.style.display = "block"; v.play().catch(() => {});
+    } else if (r.image_url || p.image_url) {
+      $("still").src = r.image_url || p.image_url; $("still").style.display = "block";
+    } else {
+      $("phoneMsg").style.display = "block";
+      $("phoneMsg").innerHTML = `${IMG("travel")}${esc(p.place_name)}<br>영상을 준비하고 있어요`;
+    }
+    $("caption").style.display = $("phoneMsg").style.display === "none" ? "block" : "none";
+    $("caption").innerHTML = `<b>${esc(p.place_name)}</b><br>${(p.matching_tags || []).map(t => "#" + esc(t)).join(" ")} #김해여행`;
+  } catch (e) {
+    if (token === viewToken) resetPhone(`${esc(p.place_name)}<br>영상을 불러오지 못했어요`);
+  }
+}
+
+// ---------- 전시용: 한동안 아무도 안 만지면 처음으로 ----------
+function armIdleReset() { clearTimeout(idleTimer); idleTimer = setTimeout(startSurvey, IDLE_RESET_MS); }
+document.addEventListener("pointerdown", () => { if (places.length) armIdleReset(); });
+
+startSurvey();
 </script>
 </body>
 </html>

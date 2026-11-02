@@ -7,7 +7,9 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
   quiz.json               2지선다 질문 7개 (문구·가중치 수정 가능)
   place_traits.json       장소별 질문 성향표 (A / B / N=상관없음)
   poi_config.json         장소별 LoRA 파일명·트리거·이미지 프롬프트·미디어 파일명
-  static/index.html       질문 테스트 화면 (http://localhost:5000/)
+  static/index.html       시연 화면 3단계: 질문 → 추천 카드 → 장소 영상 (http://localhost:5000/)
+  static/test.html        단순 테스트 화면 (http://localhost:5000/static/test.html)
+  video_jobs.py           장소 영상 작업 API (지금은 static 파일 사용, 나중에 Comfy Cloud 연결 자리)
   static/images/          장소 이미지 넣는 곳 (GIMHAE_001.png ...)
   static/videos/          장소 영상 넣는 곳 (GIMHAE_001.mp4 ...)
   warmup_cache.py         질문 답 128가지 미리 생성 + 추천 품질 리포트 (전시 전 1회)
@@ -88,7 +90,9 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
 
 5. API 목록
 -----------
-  GET  /                  질문 테스트 화면
+  GET  /                  시연 화면 (주소 끝에 ?debug 를 붙이면 생성 방식·응답 시간 표시)
+  POST /api/videos        장소 영상 작업 등록  {"place_id":"GIMHAE_001","session_id":"..."}
+  GET  /api/video-status/{task_id}   작업 상태 (succeeded / not_ready) + video_url·image_url
   GET  /quiz              질문 7개 (프론트엔드가 화면에 띄울 내용)
   POST /recommend_quiz    질문 답 → 성향 분석 + 추천 5곳   (전시용)
          보내는 값: {"answers": {"with":"A","theme":"B","mood":"A","fun":"B","move":"A","time":"A","keep":"B"}}
