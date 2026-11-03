@@ -798,7 +798,8 @@ def media_urls(place_id: str) -> dict:
 
 def with_media(result: dict) -> dict:
     out = dict(result)
-    out["recommendations"] = [{**r, **media_urls(r["place_id"])} for r in result["recommendations"]]
+    out["recommendations"] = [{**r, "image_prompt": POI.get(r["place_id"], {}).get("image_prompt", r.get("image_prompt", "")),
+                                **media_urls(r["place_id"])} for r in result["recommendations"]]
     return out
 
 
