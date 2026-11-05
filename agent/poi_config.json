@@ -3,7 +3,7 @@
   "GIMHAE_001": {
     "lora": "gimhae001_suro_v1.safetensors",
     "trigger": "gh001suro",
-    "image_prompt": "gh001suro, front view of the royal tomb, cloudy sky, mountain in the background, green lawn, summer",
+    "image_prompt": "gh001suro, a large round grass burial mound of a korean royal tomb, low stone wall, wide green lawn, pine trees, mountain in the background, cloudy sky, summer",
     "image_file": "GIMHAE_001.png",
     "video_file": "GIMHAE_001.mp4",
     "video_prompt": ""
@@ -11,7 +11,7 @@
   "GIMHAE_002": {
     "lora": "gimhae002_hwangok_v1.safetensors",
     "trigger": "gh002hwangok",
-    "image_prompt": "gh002hwangok, distant view from the entrance path, stone stairs, white fence with red gate, signboards on both sides, street lamps, hazy sky, summer",
+    "image_prompt": "gh002hwangok, a korean royal burial mound at the top of the stairs, distant view from the entrance path, stone stairs, white fence with red gate, signboards on both sides, street lamps, hazy sky, summer",
     "image_file": "GIMHAE_002.png",
     "video_file": "GIMHAE_002.mp4",
     "video_prompt": ""
@@ -19,7 +19,7 @@
   "GIMHAE_003": {
     "lora": "gimhae003_daeseong_v1.safetensors",
     "trigger": "gh003daeseong",
-    "image_prompt": "gh003daeseong, green leaves, blue sky with white mackerel clouds, green and yellow grass, summer",
+    "image_prompt": "gh003daeseong, a single large green tree on a grassy hill, blue sky with white mackerel clouds, green and yellow grass, summer",
     "image_file": "GIMHAE_003.png",
     "video_file": "GIMHAE_003.mp4",
     "video_prompt": ""
@@ -27,7 +27,7 @@
   "GIMHAE_004": {
     "lora": "gimhae004_bakmul_v2.safetensors",
     "trigger": "gh004bakmul",
-    "image_prompt": "gh004bakmul, side view of a display case, black armor vest and iron helmets, dark floor",
+    "image_prompt": "gh004bakmul, side view of a museum display case, ancient black armor vest and iron helmets, dark floor",
     "image_file": "GIMHAE_004.png",
     "video_file": "GIMHAE_004.mp4",
     "video_prompt": ""
@@ -35,7 +35,7 @@
   "GIMHAE_005": {
     "lora": "gimhae005_gosang_v1.safetensors",
     "trigger": "gh005gosang",
-    "image_prompt": "gh005gosang, close view, wooden ladder, wooden boardwalk in the foreground, blue sky with white clouds, spring",
+    "image_prompt": "gh005gosang, wooden storehouses on stilts with thatched roofs, close view, wooden ladder, wooden boardwalk in the foreground, blue sky with white clouds, spring",
     "image_file": "GIMHAE_005.png",
     "video_file": "GIMHAE_005.mp4",
     "video_prompt": ""
@@ -43,7 +43,7 @@
   "GIMHAE_006": {
     "lora": "gimhae006_clayarch_v1.safetensors",
     "trigger": "gh006clayarch",
-    "image_prompt": "gh006clayarch, close side view, blue exhibition banners at the entrance, stone paved plaza with grass, white sky, summer",
+    "image_prompt": "gh006clayarch, a round museum building with colorful ceramic tiles, close side view, blue exhibition banners at the entrance, stone paved plaza with grass, white sky, summer",
     "image_file": "GIMHAE_006.png",
     "video_file": "GIMHAE_006.mp4",
     "video_prompt": ""
@@ -51,7 +51,7 @@
   "GIMHAE_007": {
     "lora": "gimhae007_gaya_v1.safetensors",
     "trigger": "gh007gaya",
-    "image_prompt": "gh007gaya, two-story red pavilion with green windows, dirt plaza, low brick wall, bare tree on the right, clear blue sky, spring",
+    "image_prompt": "gh007gaya, red and green korean palace style pavilion, dirt plaza, low brick wall, bare tree, clear blue sky, spring",
     "image_file": "GIMHAE_007.png",
     "video_file": "GIMHAE_007.mp4",
     "video_prompt": ""
@@ -59,7 +59,7 @@
   "GIMHAE_008": {
     "lora": "gimhae008_yeonji_v1.safetensors",
     "trigger": "gh008yeonji",
-    "image_prompt": "gh008yeonji, view from the railing, tall apartment buildings on the left, fountain, wooden deck, mountains, blue sky with white clouds, autumn",
+    "image_prompt": "gh008yeonji, a big white duck figure floating on a pond, view from the railing, tall apartment buildings on the left, fountain, wooden deck, mountains, blue sky with white clouds, autumn",
     "image_file": "GIMHAE_008.png",
     "video_file": "GIMHAE_008.mp4",
     "video_prompt": ""
@@ -75,7 +75,7 @@
   "GIMHAE_010": {
     "lora": "gimhae010_eunha_v1.safetensors",
     "trigger": "gh010eunha",
-    "image_prompt": "gh010eunha, side view, pink crape myrtle tree on the right, stone lanterns, info board, rocky mountain behind, warm light, summer",
+    "image_prompt": "gh010eunha, traditional korean temple, side view, pink crape myrtle tree on the right, stone lanterns, info board, rocky mountain behind, warm light, summer",
     "image_file": "GIMHAE_010.png",
     "video_file": "GIMHAE_010.mp4",
     "video_prompt": ""
@@ -83,7 +83,7 @@
   "GIMHAE_011": {
     "lora": "gimhae011_cheoljjuk_v1.safetensors",
     "trigger": "gh011cheoljjuk",
-    "image_prompt": "gh011cheoljjuk, dirt trail up to the green peak, young bare tree beside the trail, pink flowers on the left, yellow green shrubs on the right, rope fence, deep blue clear sky",
+    "image_prompt": "gh011cheoljjuk, pink azalea flower field on a mountain, dirt trail up to the green peak, young bare tree beside the trail, pink flowers on the left, yellow green shrubs on the right, rope fence, deep blue clear sky",
     "image_file": "GIMHAE_011.png",
     "video_file": "GIMHAE_011.mp4",
     "video_prompt": ""
@@ -91,7 +91,7 @@
   "GIMHAE_012": {
     "lora": "gimhae012_cheolgyo_v1.safetensors",
     "trigger": "gh012cheolgyo",
-    "image_prompt": "gh012cheolgyo, view down the long track inside the truss tunnel, red rail bike with two masked people, green mountain, white railing, pale sky, summer",
+    "image_prompt": "gh012cheolgyo, rail bike on a steel truss railway bridge, view down the long track inside the truss tunnel, red rail bike with two masked people, green mountain, white railing, pale sky, summer",
     "image_file": "GIMHAE_012.png",
     "video_file": "GIMHAE_012.mp4",
     "video_prompt": ""
@@ -123,7 +123,7 @@
   "GIMHAE_016": {
     "lora": "gimhae016_gyegok_v1.safetensors",
     "trigger": "gh016gyegok",
-    "image_prompt": "gh016gyegok, small waterfall far in the back, mossy green boulders, calm pool with reflection, dense green forest, summer",
+    "image_prompt": "gh016gyegok, forest creek in a valley, small waterfall far in the back, mossy green boulders, calm pool with reflection, dense green forest, summer",
     "image_file": "GIMHAE_016.png",
     "video_file": "GIMHAE_016.mp4",
     "video_prompt": ""
@@ -131,7 +131,7 @@
   "GIMHAE_017": {
     "lora": "gimhae017_gima_v1.safetensors",
     "trigger": "gh017gima",
-    "image_prompt": "gh017gima, rearing horseman on the left, line of statues, curved path on the right, pine trees, white arch bridge, pink sunset sky, summer",
+    "image_prompt": "gh017gima, bronze statues of ancient warriors on horses, rearing horseman on the left, line of statues, curved path on the right, pine trees, white arch bridge, pink sunset sky, summer",
     "image_file": "GIMHAE_017.png",
     "video_file": "GIMHAE_017.mp4",
     "video_prompt": ""
@@ -139,7 +139,7 @@
   "GIMHAE_018": {
     "lora": "gimhae018_bawi_v1.safetensors",
     "trigger": "gh018bawi",
-    "image_prompt": "gh018bawi, side view, pine trunk in the upper right, green trees on the right, layered blue mountains on the left, hazy evening sky, summer",
+    "image_prompt": "gh018bawi, large balanced rock on a mountain top, side view, pine trunk in the upper right, green trees on the right, layered blue mountains on the left, hazy evening sky, summer",
     "image_file": "GIMHAE_018.png",
     "video_file": "GIMHAE_018.mp4",
     "video_prompt": ""
@@ -147,7 +147,7 @@
   "GIMHAE_019": {
     "lora": "gimhae019_yasijang_v1.safetensors",
     "trigger": "gh019yasijang",
-    "image_prompt": "gh019yasijang, street corner view, crosswalk in the foreground, yellow striped stall tents, street lamp, people with blurred faces, big cartoon mural on a yellow and blue building, string lights, dark night sky, summer",
+    "image_prompt": "gh019yasijang, a night market street corner, crosswalk in the foreground, yellow striped stall tents, street lamp, crowd of people, cartoon mural on a yellow and blue building, string lights, dark night sky",
     "image_file": "GIMHAE_019.png",
     "video_file": "GIMHAE_019.mp4",
     "video_prompt": ""
@@ -155,7 +155,7 @@
   "GIMHAE_020": {
     "lora": "gimhae020_choseon_v1.safetensors",
     "trigger": "gh020choseon",
-    "image_prompt": "gh020choseon, high view from above, carved boulder in the lower center, big rock on the right, bamboo and green trees, misty mountain slope, overcast sky, summer",
+    "image_prompt": "gh020choseon, ancient rock carved buddha in the forest, high view from above, carved boulder in the lower center, big rock on the right, bamboo and green trees, misty mountain slope, overcast sky, summer",
     "image_file": "GIMHAE_020.png",
     "video_file": "GIMHAE_020.mp4",
     "video_prompt": ""
