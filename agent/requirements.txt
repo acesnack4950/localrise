@@ -3,4 +3,3 @@ uvicorn==0.53.0
 pandas==3.0.5
 pydantic==2.13.5
 openai>=1.40,<3
-ollama==0.6.2

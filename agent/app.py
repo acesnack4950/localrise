@@ -4,8 +4,8 @@ LocalRise 김해 관광지 추천 API  (2026 AIM 챌린지 본선)
 전체 흐름
   1) 성향 입력  : 2지선다 질문 답(POST /recommend_quiz) 또는 문장(POST /recommend)
   2) 후보 선정  : 질문 답 → 장소 특성표 점수 / 문장 → CSV 태그 점수 → 상위 8곳
-  3) AI 분석    : OpenAI(GPT) 또는 Ollama(qwen2.5:7b)가 성향을 요약하고 후보 중 5곳을 골라 추천 이유 작성
-                  (LOCALRISE_LLM=openai / ollama 로 선택. 키는 .env 파일에만 넣는다)
+  3) AI 분석    : OpenAI(GPT)가 성향을 요약하고 후보 중 5곳을 골라 추천 이유 작성
+                  (키: .env 파일의 OPENAI_API_KEY)
   4) 검증·보정  : 없는 장소/중복 제거, 근거 없는 문장 제거, 3문장 미만이면 CSV 원문으로 보충
   5) 응답       : { region_id, persona_summary, recommendations[5] }
 
@@ -66,27 +66,17 @@ POI_PATH = path("poi_config.json")
 STATIC_DIR = path("static")
 CACHE_DIR = path("cache")
 
-# AI 선택: openai (GPT) / ollama (내 컴퓨터 qwen2.5:7b)
-#   LOCALRISE_LLM 을 안 정하면: OPENAI_API_KEY 가 있으면 openai, 없으면 ollama
-LLM_BACKEND = os.environ.get(
-    "LOCALRISE_LLM", "openai" if os.environ.get("OPENAI_API_KEY") else "ollama").strip().lower()
-if LLM_BACKEND not in ("openai", "ollama"):
-    LLM_BACKEND = "ollama"
+# AI 설정: OpenAI (GPT)
+LLM_BACKEND = "openai"
 OPENAI_MODEL = os.environ.get("LOCALRISE_OPENAI_MODEL", "gpt-4o-mini")
-
-OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
-OLLAMA_MODEL = os.environ.get("LOCALRISE_MODEL", "qwen2.5:7b")
-LLM_MODEL = OPENAI_MODEL if LLM_BACKEND == "openai" else OLLAMA_MODEL
-LLM_TIMEOUT = float(os.environ.get("LOCALRISE_LLM_TIMEOUT", "90"))  # 초. 넘으면 CSV 기반으로 대체
-OLLAMA_OPTIONS = {
-    "temperature": 0,      # 같은 입력 → 같은 결과 (제출 JSON 재현성)
-    "seed": 42,
-    "num_ctx": 8192,
-    "num_predict": 1500,   # 출력 길이 상한 (무한 생성 방지)
-}
-KEEP_ALIVE = "24h"         # 모델을 메모리에 계속 올려 둠 (전시 중 첫 요청 지연 방지)
+LLM_MODEL = OPENAI_MODEL
+LLM_TIMEOUT = float(os.environ.get("LOCALRISE_LLM_TIMEOUT", "40"))  # 초. 넘으면 CSV 기반으로 대체
 
 USE_CACHE = os.environ.get("LOCALRISE_CACHE", "1") != "0"
+
+# 평가(제출 재현) 모드: 1이면 시연 중 들어온 질문/문장이 /current_region 결과를 바꾸지 못한다.
+# → /current_region 은 항상 DEFAULT_PREFERENCE 파이프라인 결과(=02 제출 JSON 입력)를 반환.
+FREEZE_LATEST = os.environ.get("LOCALRISE_FREEZE", "0") == "1"
 
 TARGET_COUNT = 5           # 추천 개수 (제출 규격)
 # 추천 방식: "ai"    = 후보 10곳을 섞어서(번호 숨김) AI가 성향 비교를 읽고 코스를 구성 (기본)
@@ -216,7 +206,7 @@ _FACT_TERMS_CANDIDATES = [
     "박물관", "미술관", "돔하우스", "큐브전시관", "도자", "활쏘기", "레일바이크", "와인동굴",
     "천체망원경", "천문대", "워터파크", "슬라이드", "파도풀", "유수풀", "분수", "야시장", "매대", "공연",
     "철새", "습지", "갈대", "철쭉", "계곡", "호수", "낙동강", "김해평야", "평상", "반석",
-    "야경", "별", "축제", "등산", "물놀이", "와인",
+    "야경", "별빛", "별자리", "별관측", "축제", "등산", "물놀이", "와인",
     # 어느 장소 근거에도 없는 단어: AI가 쓰면 무조건 지어낸 내용
     "노을", "일몰", "일출", "해돋이", "단풍", "벚꽃", "입장료", "무료",
 ]
@@ -381,16 +371,7 @@ def fallback_persona(answers: Optional[Dict[str, str]]) -> str:
 # =========================================================
 
 LLM_LOCK = threading.Lock()   # AI 생성은 한 번에 하나씩 (같은 입력이면 같은 결과 + 비용·GPU 보호)
-_ollama_client = None
 _openai_client = None
-
-
-def ollama_client():
-    global _ollama_client
-    if _ollama_client is None:
-        from ollama import Client   # Ollama를 안 쓰면 설치 안 해도 되게, 필요할 때만 불러온다
-        _ollama_client = Client(host=OLLAMA_HOST, timeout=LLM_TIMEOUT)
-    return _ollama_client
 
 
 def openai_client():
@@ -405,31 +386,19 @@ def openai_client():
 
 def llm_generate(system: str, prompt: str) -> str:
     """선택된 AI에 JSON 답을 요청하고 글자 그대로 돌려준다."""
-    if LLM_BACKEND == "openai":
-        resp = openai_client().chat.completions.create(
-            model=OPENAI_MODEL,
-            messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
-            response_format={"type": "json_object"},
-            temperature=0, seed=42,   # 같은 입력 → 최대한 같은 결과 (최종 고정은 캐시로)
-            max_tokens=2500,
-        )
-        return resp.choices[0].message.content or ""
-    resp = ollama_client().generate(
-        model=OLLAMA_MODEL, system=system, prompt=prompt,
-        format="json", options=OLLAMA_OPTIONS, keep_alive=KEEP_ALIVE,
+    resp = openai_client().chat.completions.create(
+        model=OPENAI_MODEL,
+        messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
+        response_format={"type": "json_object"},
+        temperature=0, seed=42,   # 같은 입력 → 최대한 같은 결과 (최종 고정은 캐시로)
+        max_tokens=2500,
     )
-    return resp["response"] if isinstance(resp, dict) else resp.response
+    return resp.choices[0].message.content or ""
 
 
 def llm_ok() -> bool:
     """/health 용: AI에 연결할 수 있는지."""
-    try:
-        if LLM_BACKEND == "openai":
-            return bool(os.environ.get("OPENAI_API_KEY"))   # 호출 비용을 아끼려고 키 유무만 확인
-        ollama_client().list()
-        return True
-    except Exception:
-        return False
+    return bool(os.environ.get("OPENAI_API_KEY"))   # 호출 비용을 아끼려고 키 유무만 확인
 
 
 def label_of(qid: str, choice: str) -> str:
@@ -729,10 +698,19 @@ LATEST_LOCK = threading.Lock()
 LATEST: Optional[dict] = None
 
 
-def set_latest(result: dict):
+def set_latest(result: dict, force: bool = False):
     global LATEST
+    if FREEZE_LATEST and not force:
+        return
     with LATEST_LOCK:
         LATEST = result
+
+
+def default_result() -> dict:
+    """제출 02 JSON과 같은 입력(DEFAULT_PREFERENCE)의 파이프라인 결과 (캐시 우선)."""
+    return cached_run("text:" + DEFAULT_PREFERENCE,
+                      lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE),
+                                           key="text:" + DEFAULT_PREFERENCE))
 
 
 def public(result: dict) -> dict:
@@ -752,19 +730,21 @@ def public(result: dict) -> dict:
 # =========================================================
 
 def warmup():
-    """서버 시작 시 AI 준비 상태 확인. Ollama는 모델을 미리 메모리에 올려 첫 관람객 대기 시간을 줄인다."""
-    if LLM_BACKEND == "openai":
-        if os.environ.get("OPENAI_API_KEY"):
-            print(f"[LocalRise] AI 준비 완료 (OpenAI {OPENAI_MODEL})")
-        else:
-            print("[LocalRise] OPENAI_API_KEY가 없습니다. agent/.env 확인 (지금은 CSV 기반 대체 문장으로 동작)")
-        return
+    """서버 시작 시 AI 준비 상태 확인."""
+    if os.environ.get("OPENAI_API_KEY"):
+        print(f"[LocalRise] AI 준비 완료 (OpenAI {OPENAI_MODEL})")
+    else:
+        print("[LocalRise] OPENAI_API_KEY가 없습니다. agent/.env 확인 (지금은 CSV 기반 대체 문장으로 동작)")
+    # 첫 /current_region 요청이 AI 대기 없이 즉시 응답하도록 기본 결과를 미리 준비
     try:
-        ollama_client().generate(model=OLLAMA_MODEL, prompt="안녕", options={"num_predict": 1},
-                                 keep_alive=KEEP_ALIVE)
-        print("[LocalRise] AI 모델 준비 완료 (Ollama)")
+        res = default_result()
+        with LATEST_LOCK:
+            has_latest = LATEST is not None
+        if not has_latest:
+            set_latest(res, force=True)
+        print(f"[LocalRise] 기본 추천 준비 완료 (source: {res.get('source')})")
     except Exception as e:
-        print(f"[LocalRise] AI 모델 준비 실패 (Ollama 실행 여부 확인): {e}")
+        print(f"[LocalRise] 기본 추천 사전 준비 실패(요청 시 다시 시도): {e}")
 
 
 @asynccontextmanager
@@ -772,8 +752,11 @@ async def lifespan(_app):
     threading.Thread(target=warmup, daemon=True).start()
     yield
 
+class UTF8JSONResponse(JSONResponse):
+    media_type = "application/json; charset=utf-8"
 
-app = FastAPI(title="LocalRise 김해 추천 API", version=PROMPT_VERSION, lifespan=lifespan)
+app = FastAPI(title="LocalRise 김해 추천 API", version=PROMPT_VERSION, lifespan=lifespan,
+              default_response_class=UTF8JSONResponse)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -821,7 +804,6 @@ def health():
     ok = llm_ok()
     return {"status": "ok", "region_id": REGION_ID, "places": len(PLACES),
             "questions": len(QUESTIONS), "llm": LLM_BACKEND, "llm_ok": ok, "model": LLM_MODEL,
-            "ollama": ok if LLM_BACKEND == "ollama" else None,
             "select_mode": SELECT_MODE,
             "cache_entries": len(CACHE), "data_version": DATA_VERSION}
 
@@ -858,21 +840,31 @@ def recommend(req: PreferenceRequest):
     return result
 
 
+def region_error(status: int, message: str) -> UTF8JSONResponse:
+    """대회 권장 오류 스키마: {"region_id": 본인 팀 지역, "message": 원인}"""
+    return UTF8JSONResponse(status_code=status, content={"region_id": REGION_ID, "message": message})
+
+
 @app.get("/current_region")
 def current_region(region_id: str = Query("", description="요청 지역 ID (GIMHAE)")):
     """대회 공통 Re:Local 연계 API: GET http://{HOST}:5000/current_region?region_id=GIMHAE"""
     requested = clean_text(region_id)
     if requested.upper() != REGION_ID:
-        return JSONResponse(status_code=404, content={
-            "region_id": requested or "UNKNOWN",
-            "message": "Requested region_id was not found."})
-    with LATEST_LOCK:
-        latest = LATEST
-    if latest is None:
-        latest = cached_run("text:" + DEFAULT_PREFERENCE,
-                            lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE)))
-        set_latest(latest)
-    return public(latest)
+        return region_error(404, "Requested region_id was not found.")
+    try:
+        with LATEST_LOCK:
+            latest = LATEST
+        if latest is None:
+            latest = default_result()
+            set_latest(latest, force=True)
+        return public(latest)
+    except Exception as e:   # 어떤 예외든 대회 오류 스키마로 변환
+        print(f"[ERROR] /current_region: {e}")
+        with LATEST_LOCK:
+            latest = LATEST
+        if latest is not None:   # 이전 결과가 있으면 그것으로 대신 응답
+            return public(latest)
+        return region_error(500, f"추천 파이프라인 처리 중 오류가 발생했습니다: {getattr(e, 'detail', e)}")
 
 
 @app.get("/poi/{place_id}")

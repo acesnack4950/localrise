@@ -1,91 +1,268 @@
 <!doctype html>
 <html lang="ko">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>LocalRise 김해 여행 성향 테스트</title>
-<style>
-  :root { --bg:#f6f3ee; --card:#fff; --ink:#1f2a24; --sub:#6b7570; --accent:#2f6b4f; --accent2:#e6efe9; --line:#e2ddd4; }
-  * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--ink); font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif; }
-  .wrap { max-width:760px; margin:0 auto; padding:32px 16px 64px; }
-  h1 { font-size:26px; margin:0 0 4px; } .lead { color:var(--sub); margin:0 0 24px; }
-  .bar { height:6px; background:var(--line); border-radius:3px; overflow:hidden; margin-bottom:24px; }
-  .bar > i { display:block; height:100%; width:0; background:var(--accent); transition:width .25s; }
-  .q { background:var(--card); border-radius:16px; padding:28px 20px; box-shadow:0 1px 3px rgba(0,0,0,.06); }
-  .q h2 { font-size:21px; margin:0 0 20px; text-align:center; }
-  .opts { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-  .opt { border:2px solid var(--line); background:#fff; border-radius:12px; padding:22px 12px; font-size:17px; cursor:pointer; color:var(--ink); }
-  .opt:hover { border-color:var(--accent); background:var(--accent2); }
-  .muted { color:var(--sub); font-size:14px; text-align:center; margin-top:14px; }
-  .persona { background:var(--accent); color:#fff; border-radius:16px; padding:20px; margin-bottom:18px; font-size:17px; line-height:1.6; }
-  .rec { background:var(--card); border-radius:14px; padding:18px; margin-bottom:12px; display:grid; grid-template-columns:120px 1fr; gap:16px; }
-  .rec .media { width:120px; height:90px; border-radius:10px; background:var(--accent2); object-fit:cover; display:flex; align-items:center; justify-content:center; color:var(--sub); font-size:12px; }
-  .rec h3 { margin:0 0 6px; font-size:18px; } .rec p { margin:0 0 8px; line-height:1.6; font-size:15px; }
-  .tag { display:inline-block; background:var(--accent2); color:var(--accent); border-radius:999px; padding:2px 10px; font-size:13px; margin-right:4px; }
-  .btn { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:12px 18px; font-size:16px; cursor:pointer; margin-top:8px; }
-  .meta { color:var(--sub); font-size:13px; margin-top:12px; }
-  .spin { width:36px; height:36px; border:4px solid var(--line); border-top-color:var(--accent); border-radius:50%; margin:24px auto; animation:r 1s linear infinite; }
-  @keyframes r { to { transform:rotate(360deg); } }
-  @media (max-width:520px) { .opts { grid-template-columns:1fr; } .rec { grid-template-columns:1fr; } .rec .media { width:100%; height:160px; } }
-</style>
-</head>
-<body>
-<div class="wrap">
-  <h1>나에게 맞는 김해 여행지는?</h1>
-  <p class="lead">둘 중 더 끌리는 쪽을 골라 주세요. AI가 성향을 분석해 5곳을 추천합니다.</p>
-  <div class="bar"><i id="bar"></i></div>
-  <div id="app"><div class="spin"></div></div>
-</div>
-<script>
-// 이 페이지는 API 동작 확인용 테스트 화면입니다. 팀 프론트엔드는 같은 API(/quiz, /recommend_quiz)를 호출하면 됩니다.
-const el = document.getElementById("app"), bar = document.getElementById("bar");
-let questions = [], answers = {}, idx = 0;
-const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
-async function start() {
-  try {
-    questions = (await (await fetch("/quiz")).json()).questions;
-    answers = {}; idx = 0; showQ();
-  } catch (e) { el.innerHTML = `<p class="muted">질문을 불러오지 못했습니다: ${esc(e)}</p>`; }
-}
-function showQ() {
-  bar.style.width = (idx / questions.length * 100) + "%";
-  const q = questions[idx];
-  el.innerHTML = `<div class="q"><h2>${esc(q.text)}</h2><div class="opts">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LocalRise 김해 여행 성향 테스트</title>
+  <style>
+    :root {
+      --bg: #f6f3ee;
+      --card: #fff;
+      --ink: #1f2a24;
+      --sub: #6b7570;
+      --accent: #2f6b4f;
+      --accent2: #e6efe9;
+      --line: #e2ddd4;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+    }
+
+    .wrap {
+      max-width: 760px;
+      margin: 0 auto;
+      padding: 32px 16px 64px;
+    }
+
+    h1 {
+      font-size: 26px;
+      margin: 0 0 4px;
+    }
+
+    .lead {
+      color: var(--sub);
+      margin: 0 0 24px;
+    }
+
+    .bar {
+      height: 6px;
+      background: var(--line);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .bar>i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: var(--accent);
+      transition: width .25s;
+    }
+
+    .q {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 28px 20px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, .06);
+    }
+
+    .q h2 {
+      font-size: 21px;
+      margin: 0 0 20px;
+      text-align: center;
+    }
+
+    .opts {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .opt {
+      border: 2px solid var(--line);
+      background: #fff;
+      border-radius: 12px;
+      padding: 22px 12px;
+      font-size: 17px;
+      cursor: pointer;
+      color: var(--ink);
+    }
+
+    .opt:hover {
+      border-color: var(--accent);
+      background: var(--accent2);
+    }
+
+    .muted {
+      color: var(--sub);
+      font-size: 14px;
+      text-align: center;
+      margin-top: 14px;
+    }
+
+    .persona {
+      background: var(--accent);
+      color: #fff;
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 18px;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    .rec {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 18px;
+      margin-bottom: 12px;
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 16px;
+    }
+
+    .rec .media {
+      width: 120px;
+      height: 90px;
+      border-radius: 10px;
+      background: var(--accent2);
+      object-fit: cover;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--sub);
+      font-size: 12px;
+    }
+
+    .rec h3 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .rec p {
+      margin: 0 0 8px;
+      line-height: 1.6;
+      font-size: 15px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: var(--accent2);
+      color: var(--accent);
+      border-radius: 999px;
+      padding: 2px 10px;
+      font-size: 13px;
+      margin-right: 4px;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #fff;
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .meta {
+      color: var(--sub);
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .spin {
+      width: 36px;
+      height: 36px;
+      border: 4px solid var(--line);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      margin: 24px auto;
+      animation: r 1s linear infinite;
+    }
+
+    @keyframes r {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width:520px) {
+      .opts {
+        grid-template-columns: 1fr;
+      }
+
+      .rec {
+        grid-template-columns: 1fr;
+      }
+
+      .rec .media {
+        width: 100%;
+        height: 160px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <h1>나에게 맞는 김해 여행지는?</h1>
+    <p class="lead">둘 중 더 끌리는 쪽을 골라 주세요. AI가 성향을 분석해 5곳을 추천합니다.</p>
+    <div class="bar"><i id="bar"></i></div>
+    <div id="app">
+      <div class="spin"></div>
+    </div>
+  </div>
+  <script>
+    // 이 페이지는 API 동작 확인용 테스트 화면입니다. 팀 프론트엔드는 같은 API(/quiz, /recommend_quiz)를 호출하면 됩니다.
+    const el = document.getElementById("app"), bar = document.getElementById("bar");
+    let questions = [], answers = {}, idx = 0;
+    const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    async function start() {
+      try {
+        questions = (await (await fetch("/quiz")).json()).questions;
+        answers = {}; idx = 0; showQ();
+      } catch (e) { el.innerHTML = `<p class="muted">질문을 불러오지 못했습니다: ${esc(e)}</p>`; }
+    }
+    function showQ() {
+      bar.style.width = (idx / questions.length * 100) + "%";
+      const q = questions[idx];
+      el.innerHTML = `<div class="q"><h2>${esc(q.text)}</h2><div class="opts">
     <button class="opt" data-v="A">${esc(q.options.A.label)}</button>
     <button class="opt" data-v="B">${esc(q.options.B.label)}</button></div>
     <p class="muted">${idx + 1} / ${questions.length}</p></div>`;
-  el.querySelectorAll(".opt").forEach(b => b.onclick = () => pick(q.id, b.dataset.v));
-}
-function pick(id, v) {
-  answers[id] = v; idx++;
-  idx < questions.length ? showQ() : submit();
-}
-async function submit() {
-  bar.style.width = "100%";
-  el.innerHTML = `<div class="spin"></div><p class="muted">AI가 여행 성향을 분석하고 있어요…</p>`;
-  const t0 = performance.now();
-  try {
-    const res = await fetch("/recommend_quiz", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({answers}) });
-    if (!res.ok) throw new Error((await res.json()).detail || res.status);
-    showResult(await res.json(), ((performance.now() - t0) / 1000).toFixed(1));
-  } catch (e) { el.innerHTML = `<p class="muted">추천 실패: ${esc(e.message)}</p><button class="btn" onclick="start()">다시 하기</button>`; }
-}
-function media(r) {
-  if (r.video_url) return `<video class="media" src="${esc(r.video_url)}" autoplay muted loop playsinline></video>`;
-  if (r.image_url) return `<img class="media" src="${esc(r.image_url)}" alt="${esc(r.place_name)}">`;
-  return `<div class="media">이미지 준비 중</div>`;
-}
-function showResult(d, sec) {
-  el.innerHTML = `<div class="persona">${esc(d.persona_summary)}</div>` +
-    d.recommendations.map((r, i) => `<div class="rec">${media(r)}<div>
+      el.querySelectorAll(".opt").forEach(b => b.onclick = () => pick(q.id, b.dataset.v));
+    }
+    function pick(id, v) {
+      answers[id] = v; idx++;
+      idx < questions.length ? showQ() : submit();
+    }
+    async function submit() {
+      bar.style.width = "100%";
+      el.innerHTML = `<div class="spin"></div><p class="muted">AI가 여행 성향을 분석하고 있어요…</p>`;
+      const t0 = performance.now();
+      try {
+        const res = await fetch("/recommend_quiz", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ answers }) });
+        if (!res.ok) throw new Error((await res.json()).detail || res.status);
+        showResult(await res.json(), ((performance.now() - t0) / 1000).toFixed(1));
+      } catch (e) { el.innerHTML = `<p class="muted">추천 실패: ${esc(e.message)}</p><button class="btn" onclick="start()">다시 하기</button>`; }
+    }
+    function media(r) {
+      if (r.video_url) return `<video class="media" src="${esc(r.video_url)}" autoplay muted loop playsinline></video>`;
+      if (r.image_url) return `<img class="media" src="${esc(r.image_url)}" alt="${esc(r.place_name)}">`;
+      return `<div class="media">이미지 준비 중</div>`;
+    }
+    function showResult(d, sec) {
+      el.innerHTML = `<div class="persona">${esc(d.persona_summary)}</div>` +
+        d.recommendations.map((r, i) => `<div class="rec">${media(r)}<div>
       <h3>${i + 1}. ${esc(r.place_name)}</h3><p>${esc(r.recommend_reason)}</p>
       ${(r.matching_tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join("")}</div></div>`).join("") +
-    `<button class="btn" onclick="start()">처음부터 다시</button>
+        `<button class="btn" onclick="start()">처음부터 다시</button>
      <p class="meta">응답 ${sec}초 · 생성 방식: ${esc(d.source)} · 답: ${esc(Object.values(d.answers || {}).join(""))}</p>`;
-}
-start();
-</script>
+    }
+    start();
+  </script>
 </body>
+
 </html>

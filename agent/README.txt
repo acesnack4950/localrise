@@ -183,4 +183,20 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
   ModuleNotFoundError        → .venv 활성화 확인 후 pip install -r requirements.txt
   /health 에서 llm_ok:false  → OpenAI: agent/.env 의 OPENAI_API_KEY 확인 / Ollama: 앱 실행, "ollama list" 확인
   source 가 fallback 만 나옴 → 위와 동일 (AI 연결 안 됨)
+  페이지를 열 수 없음         → 0.0.0.0:5000 은 서버 바인딩 주소이므로 브라우저에서는 http://localhost:5000 으로 접속
   같은 PC 다른 기기에서 접속 → http://노트북IP:5000 , Windows 방화벽에서 5000 포트 허용
+
+
+[v2.3 변경 / 평가 제출 시 주의]
+  - /current_region 은 모든 오류를 {"region_id":"GIMHAE","message":...} 로 반환 (예외 시 이전 결과로 대체)
+  - 브라우저에서 JSON 응답의 한글이 깨지지 않도록 UTF8JSONResponse(application/json; charset=utf-8)를 기본 응답 클래스 및 오류 응답(region_error)에 적용
+  - 서버 시작 시 기본 추천(DEFAULT_PREFERENCE)을 미리 만들어 첫 요청도 즉시 응답
+  - 평가·제출 재현 모드: LOCALRISE_FREEZE=1 (.env 또는 환경변수)
+      → 시연 중 질문/문장이 /current_region 결과를 바꾸지 못함 (02 제출 JSON과 동일 결과 유지)
+  - 02 JSON은 반드시 기본 문장으로 생성:  python make_submission_json.py   (인자 없이)
+
+
+# 개선 요구사항
+  step2 로 넘어가는 과정에서 아무런 안내가 없기에 애니메이션이나 게임같은 작은 요소가 있음 좋겠음.(추천근거성을 반환하기에 그것을 이용해도 좋음)
+  테마를 비행기 공항 출국 이런 방향으로 잡으면 좋을 것같음. 이유는 전시대가 공항 컨셉이라
+  
