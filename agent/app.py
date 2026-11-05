@@ -109,6 +109,9 @@ DEFAULT_PREFERENCE = os.environ.get(
     "가족과 함께 김해의 가야 역사와 자연을 여유롭게 둘러보고 싶어요.",
 )
 
+# 서버 시작 직후 /current_region 기본값 = 02 제출 JSON과 같은 질문 답 (make_submission_json.py --quiz 와 동일)
+DEFAULT_QUIZ = os.environ.get("LOCALRISE_DEFAULT_QUIZ", "ABAAABA").strip().upper()
+
 PROMPT_VERSION = "v2.2"    # AI 지시문을 바꾸면 올릴 것 (캐시 자동 무효화)
 
 
@@ -859,6 +862,17 @@ def recommend(req: PreferenceRequest):
     return result
 
 
+def default_quiz_result() -> dict:
+    """02 제출 JSON과 같은 입력(DEFAULT_QUIZ)의 추천 결과. 캐시에 있으면 그대로 사용."""
+    if len(DEFAULT_QUIZ) == len(QUESTIONS) and set(DEFAULT_QUIZ) <= {"A", "B"}:
+        answers = normalize_answers({q["id"]: c for q, c in zip(QUESTIONS, DEFAULT_QUIZ)})
+        key = "quiz:" + answers_key(answers)
+        return cached_run(key, lambda: run_pipeline(
+            answers_to_text(answers), candidates_from_quiz(answers), answers, key))
+    return cached_run("text:" + DEFAULT_PREFERENCE,
+                      lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE)))
+
+
 @app.get("/current_region")
 def current_region(region_id: str = Query("", description="요청 지역 ID (GIMHAE)")):
     """대회 공통 Re:Local 연계 API: GET http://{HOST}:5000/current_region?region_id=GIMHAE"""
@@ -870,8 +884,7 @@ def current_region(region_id: str = Query("", description="요청 지역 ID (GIM
     with LATEST_LOCK:
         latest = LATEST
     if latest is None:
-        latest = cached_run("text:" + DEFAULT_PREFERENCE,
-                            lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE)))
+        latest = default_quiz_result()
         set_latest(latest)
     return public(latest)
 
