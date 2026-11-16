@@ -1,0 +1,89 @@
+<!--
+  [ARCHIVED COMPONENT] STAGE 3: 상공 비행 체험 · 마일리지 & 기내 매거진 · 메인 모니터 안내 보드
+  - 영상 생성 로딩 화면(#introOverlay) 터치 시 넘어가던 상세 안내 보드(#stage3)를 추후 재사용할 수 있도록 분리 보관한 파일입니다.
+  - 관련 CSS: /static/airport.css 내 `.inflight-stage`, `.inflight-top-bar`, `.render-progress-box`, `.stage3-brand-banner`, `.inflight-grid`, `.ent-card`, `.magazine-box`, `.monitor-broadcast-card`, `.tv-frame`, `.passport-stamp-btn`, `.vote-banner`, `.inflight-bottom-nav`
+  - 관련 JS: /static/airport.js 내 `initStandbyOverlay`의 `#introOverlay` 클릭 리스너 및 `startInflightVideoStage` 주석 블록 (`triggerJetBoost`, `spawnSkyToken`, `setupMagazineTips` 포함)
+-->
+
+  <!-- ==================== STAGE 3: 상공 비행 체험 + 모니터 안내 ==================== -->
+  <section class="stage" id="stage3">
+    <div class="inflight-stage">
+      <div class="inflight-top-bar">
+        <div class="inflight-dest-badge">
+          <span>IN-FLIGHT TO GIMHAE</span>
+          <h2 id="inflightTitle">김해 상공 순항 중</h2>
+        </div>
+        <div class="countdown-pill" id="countdownPill">⏱ 도착까지 60초 · 마일리지 0 M</div>
+      </div>
+
+      <!-- 60초 비행 진행 게이지 -->
+      <div class="render-progress-box">
+        <div class="render-progress-head">
+          <span id="renderStatusText">✈️ 기장 토더기와 함께 목적지 상공으로 순항하고 있습니다</span>
+          <span id="renderPctText">0%</span>
+        </div>
+        <div class="render-bar-bg">
+          <div class="render-bar-fill" id="renderBarFill"></div>
+        </div>
+      </div>
+
+      <!-- STEP 3 상단: LocalRise 브랜드 & 영상 생성 배너 -->
+      <div class="stage3-brand-banner" id="flightScene">
+        <img class="stage3-banner-mascot" src="/static/brand/todeogi_plane.png?v=tr2" alt="기장 토더기" onerror="this.remove()">
+        <div class="stage3-banner-body">
+          <div class="stage3-banner-headline">&ldquo;검색은 줄이고, <span>설렘만 남기다.</span>&rdquo;</div>
+          <div class="stage3-banner-meaning">
+            <b><span class="logo-local">Local</span><span class="logo-rise">Rise</span></b> &mdash;
+            <b>Local</b>(지역의 숨은 가치)을 <b>Rise</b>(당신의 특별한 여행으로 띄우다)
+          </div>
+          <div class="stage3-banner-slogan">&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</div>
+        </div>
+        <div id="skyTokenLayer" hidden></div>
+      </div>
+
+      <!-- 하단 2열: 왼쪽 기내 엔터테인먼트 / 오른쪽 외부 모니터 안내 & 여권 스탬프 & 응원 -->
+      <div class="inflight-grid">
+        <div class="ent-card">
+          <div>
+            <div class="ent-title">✨ 기내 엔터테인먼트 1 · 하늘의 황금 아이템 &amp; 취향 태그 터치!</div>
+            <p class="ent-sub">위 하늘에 날아오는 김해 아이콘이나 아래 태그를 터치하면 비행기가 가속하며 마일리지가 쌓여요</p>
+            <div class="floating-tags" id="floatingTags"></div>
+          </div>
+
+          <div class="magazine-box">
+            <small id="magStepLabel">📖 IN-FLIGHT MAGAZINE · 알고 가면 2배 재밌는 목적지 포인트 (1/3)</small>
+            <p id="magFactText">목적지 정보를 불러오고 있습니다...</p>
+            <button class="next-tip-btn" id="nextTipBtn" type="button">다음 포인트 보기 ➔</button>
+          </div>
+        </div>
+
+        <div class="monitor-broadcast-card">
+          <div>
+            <div class="tv-frame">
+              <span class="tv-status-badge" id="tvStatusBadge">📡 MAIN MONITOR · 착륙 준비 중</span>
+              <h3 id="tvHeadline">앞쪽의 전용 모니터를 주목해 주세요!</h3>
+              <p id="tvSubtext">기장 토더기가 승객님이 선택하신 김해 여행지의 생생한 풍경을 준비하고 있습니다.<br>잠시 후 <b>앞쪽 메인 모니터</b>에서 특별한 김해 여행이 펼쳐집니다.</p>
+            </div>
+
+            <button class="passport-stamp-btn" id="passportStampBtn" type="button">
+              🛂 여기를 터치해 디지털 김해 여권에 입국 도장 찍기! (쾅!)
+            </button>
+          </div>
+
+          <div class="vote-banner">
+            <img class="vote-banner-mascot" src="/static/brand/todeogi_vote.png?v=tr2" alt="투표 토더기" onerror="this.remove()">
+            <div>
+              <strong>&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</strong>
+              <p>설레는 여행의 시작을 만든 <b>TEAM <span class="vote-local">Local</span><span class="vote-rise">Rise</span></b>에 소중한 한 표(투표) 부탁드려요!</p>
+            </div>
+            <button class="like-btn" id="likeBtn" onclick="showFinaleScreen()">🏁 체험 완료 &amp; 응원하기</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="inflight-bottom-nav">
+        <button class="back-btn" style="color:var(--rise-dark);margin:0;font-weight:800" onclick="navigateStep(2)">← STEP 2로 돌아가 다른 여행지 고르기</button>
+        <button class="back-btn" style="color:var(--orange-deep);margin:0;font-weight:900" onclick="showFinaleScreen()">🎉 여행 마무리 · LocalRise 엔딩 보기 ➔</button>
+      </div>
+    </div>
+  </section>

@@ -16,8 +16,16 @@ const SKY_ITEMS = [
   { icon: "🍓", label: "김해 산딸기 +100M" }
 ];
 const DEBUG = new URLSearchParams(location.search).has("debug");
-const IMG = n => `<img src="/static/brand/todeogi_${n}.png" alt="" onerror="this.remove()">`;
+const IMG = n => `<img src="/static/brand/todeogi_${n}.png?v=tr2" alt="" onerror="this.remove()">`;
 const IDLE_RESET_MS = 180000;   // 3분 동안 아무 터치 없으면 자동 초기화
+
+function enterFullscreenIfNeeded() {
+  const docEl = document.documentElement;
+  if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+    const req = docEl.requestFullscreen || docEl.webkitRequestFullscreen;
+    if (req) req.call(docEl).catch(() => {});
+  }
+}
 
 function toggleFullscreen() {
   const docEl = document.documentElement;
@@ -29,9 +37,29 @@ function toggleFullscreen() {
     if (exit) exit.call(document).catch(() => {});
   }
 }
-document.addEventListener("fullscreenchange", () => {
-  $("fsBtn").textContent = document.fullscreenElement ? "✕ 전체화면 종료" : "⛶ 전체 화면";
-});
+
+function syncFullscreenButtons() {
+  const isFs = Boolean(document.fullscreenElement || document.webkitFullscreenElement);
+  document.body.classList.toggle("is-fullscreen", isFs);
+  if ($("fsBtn")) $("fsBtn").textContent = isFs ? "✕ 전체화면 종료" : "⛶ 전체화면";
+  if ($("standbyFsBtn")) $("standbyFsBtn").textContent = isFs ? "✕ 전체화면 종료" : "⛶ 대기화면 전체화면";
+}
+document.addEventListener("fullscreenchange", syncFullscreenButtons);
+document.addEventListener("webkitfullscreenchange", syncFullscreenButtons);
+
+function syncDeviceViewport() {
+  const vv = window.visualViewport;
+  const vw = vv ? vv.width : window.innerWidth;
+  const vh = vv ? vv.height : window.innerHeight;
+  document.documentElement.style.setProperty("--app-vw", `${vw}px`);
+  document.documentElement.style.setProperty("--app-vh", `${vh}px`);
+  const scale = Math.min(vw / 1280, vh / 760);
+  document.documentElement.style.fontSize = `${Math.max(11, Math.min(16, 15 * scale)).toFixed(2)}px`;
+}
+window.addEventListener("resize", syncDeviceViewport);
+window.addEventListener("orientationchange", syncDeviceViewport);
+if (window.visualViewport) window.visualViewport.addEventListener("resize", syncDeviceViewport);
+syncDeviceViewport();
 
 async function api(url, body) {
   const res = await fetch(url, body ? { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) } : undefined);
@@ -43,12 +71,15 @@ let questions = [], answers = {}, idx = 0, places = [], selected = 0, sessionId 
 let miles = 0, maxStage = 1, recoPromise = null, recoToken = 0;
 let waitInterval = null, tokenSpawnInterval = null, tipIndex = 0, currentTips = [];
 const tasks = {};   // place_id -> {task_id, result}
+const playedPlaces = new Set(); // 메인 모니터 상영 완료된 장소 ID 기록
 
 function updateStepPills(currentStep) {
   if (currentStep > maxStage) maxStage = currentStep;
   [1, 2, 3].forEach(n => {
-    $("stage" + n).classList.toggle("active", n === currentStep);
+    const st = $("stage" + n);
+    if (st) st.classList.toggle("active", n === currentStep);
     const pill = $("stepPill" + n);
+    if (!pill) return;
     pill.classList.remove("active", "done", "locked");
     if (n > maxStage) {
       pill.classList.add("locked");
@@ -58,7 +89,9 @@ function updateStepPills(currentStep) {
       pill.classList.add("done");
     }
   });
-  $("fidsStatus").textContent = currentStep === 1 ? "CHECK-IN" : currentStep === 2 ? "SELECT GATE" : "IN-FLIGHT";
+  if ($("fidsStatus")) $("fidsStatus").textContent = currentStep === 1 ? "CHECK-IN" : currentStep === 2 ? "SELECT GATE" : "IN-FLIGHT";
+  const runwayBar = $("topRunwayBar");
+  if (runwayBar) runwayBar.style.display = currentStep === 1 ? "" : "none";
 }
 
 function setStage(step) {
@@ -84,8 +117,115 @@ function navigateStep(targetStep) {
 
 function toggleCheer(btn) {
   btn.classList.toggle("liked");
-  btn.textContent = btn.classList.contains("liked") ? "💖 응원 완료! 감사합니다" : "👍 응원하기";
+  btn.textContent = btn.classList.contains("liked") ? "💖 응원 완료! 감사합니다" : "👍 LocalRise 응원";
 }
+
+let introTimer = null;
+let loadingMsgInterval = null;
+let kineticSwitchTimer = null;
+
+// ---------- STANDBY / INTRO / FINALE OVERLAYS ----------
+function showStandbyScreen() {
+  clearTimeout(introTimer);
+  clearInterval(loadingMsgInterval);
+  clearTimeout(kineticSwitchTimer);
+  const overlay = $("standbyOverlay");
+  const intro = $("introOverlay");
+  const finale = $("finaleOverlay");
+  if (intro) intro.classList.add("hidden");
+  if (finale) finale.classList.add("hidden");
+  if (overlay) overlay.classList.remove("hidden");
+  startSurvey();
+}
+
+function finishIntroOverlay() {
+  clearTimeout(introTimer);
+  clearInterval(waitInterval);
+  clearInterval(loadingMsgInterval);
+  clearTimeout(kineticSwitchTimer);
+  const intro = $("introOverlay");
+  if (intro && !intro.classList.contains("hidden")) {
+    intro.classList.add("hidden");
+  }
+  // #stage3 안내 보드가 주석 처리된 상태이므로 영상 로딩 완료 후 다른 여행지도 이어서 재생할 수 있도록 STEP 2로 자연스럽게 복귀
+  if (!$("stage3")) {
+    renderStage2Candidates();
+    setStage(2);
+    $("headerBubble").textContent = "앞쪽 메인 모니터에서 영상을 감상해 보세요! 다른 추천 여행지 4곳도 자유롭게 눌러 보실 수 있어요.";
+    armIdleReset();
+    return;
+  }
+  armIdleReset();
+}
+
+function dismissStandbyScreen() {
+  const overlay = $("standbyOverlay");
+  if (!overlay || overlay.classList.contains("hidden")) return;
+  overlay.classList.add("hidden");
+  armIdleReset();
+}
+
+function showFinaleScreen() {
+  const finale = $("finaleOverlay");
+  const listEl = $("finaleCourseList");
+  if (listEl && places.length) {
+    listEl.innerHTML = places.map((p, i) => {
+      const prefix = i === selected ? "✈️ " : `${i + 1}. `;
+      return `<span class="course-pill">${prefix}${esc(p.place_name)}</span>`;
+    }).join("");
+  }
+  if (finale) finale.classList.remove("hidden");
+  armIdleReset();
+}
+
+function closeFinaleToStep2() {
+  const finale = $("finaleOverlay");
+  if (finale) finale.classList.add("hidden");
+  navigateStep(2);
+  armIdleReset();
+}
+
+function finishAndReturnStandby() {
+  showStandbyScreen();
+}
+
+(function initStandbyOverlay() {
+  const overlay = $("standbyOverlay");
+  const intro = $("introOverlay");
+  const fsBtn = $("standbyFsBtn");
+  if (fsBtn) {
+    fsBtn.addEventListener("pointerdown", e => {
+      e.stopPropagation();
+    });
+    fsBtn.addEventListener("click", e => {
+      e.stopPropagation();
+      toggleFullscreen();
+    });
+  }
+  /* [주석 처리 - 영상 로딩 화면(#introOverlay) 터치 시 안내 보드(#stage3)로 이동하는 로직 비활성화 (stage3_inflight_info.archive.html 참고)]
+  if (intro) {
+    intro.addEventListener("pointerdown", e => {
+      e.preventDefault();
+      finishIntroOverlay();
+    });
+  }
+  */
+  if (!overlay) return;
+  overlay.addEventListener("pointerdown", e => {
+    if (e.target.closest("#standbyFsBtn")) return;
+    e.preventDefault();
+    enterFullscreenIfNeeded();
+    dismissStandbyScreen();
+  });
+  overlay.addEventListener("keydown", e => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      enterFullscreenIfNeeded();
+      dismissStandbyScreen();
+    }
+  });
+  syncFullscreenButtons();
+})();
 
 // ---------- STAGE 1: 셀프 체크인 설문 ----------
 async function startSurvey() {
@@ -93,6 +233,7 @@ async function startSurvey() {
   clearInterval(waitInterval);
   clearInterval(tokenSpawnInterval);
   answers = {}; idx = 0; places = []; viewToken++; miles = 0; maxStage = 1; recoToken++; recoPromise = null;
+  playedPlaces.clear();
   for (const k in tasks) delete tasks[k];
   sessionId = "s_" + Math.random().toString(36).slice(2, 10);
   setStage(1);
@@ -107,17 +248,28 @@ async function startSurvey() {
 }
 
 function updateRunway(doneCount, total) {
-  const pct = Math.round((doneCount / total) * 100);
-  $("runwayFill").style.width = `${pct}%`;
-  $("planeIcon").style.left = `${Math.max(4, Math.min(96, pct))}%`;
-  $("runwayPct").textContent = `CHECK-IN ${pct}%`;
-  $("qCounter").textContent = `${Math.min(doneCount + 1, total)} / ${total}`;
+  const steps = Math.max(1, total);
+  const slotPos = k => (k / steps) * 100; // k=0(START 0%) ~ k=7(Q7 100%) 활주로 끝까지 동일 좌표계
+  const clampedDone = Math.max(0, Math.min(doneCount, total));
+  const planePct = slotPos(clampedDone);
+  const fillPct = planePct;
+  const pctText = Math.round((clampedDone / steps) * 100);
+
+  $("runwayFill").style.width = `${fillPct}%`;
+  $("planeIcon").style.left = `${planePct}%`;
+  $("runwayPct").textContent = `CHECK-IN ${pctText}% (${clampedDone}/${total})`;
+  if ($("qCounter")) $("qCounter").textContent = `QUESTION ${Math.min(clampedDone + 1, total)} / ${total}`;
   const dots = $("runwayDots");
   if (dots) {
-    dots.innerHTML = Array.from({ length: total }, (_, i) => {
-      const cls = i < doneCount ? "done" : i === doneCount ? "curr" : "";
-      return `<span class="${cls}">${i < doneCount ? "✓" : "Q" + (i + 1)}</span>`;
+    const startCls = clampedDone === 0 ? "curr" : "done";
+    const startSpan = `<span class="${startCls}" style="left:${slotPos(0).toFixed(2)}%">START</span>`;
+    const qSpans = Array.from({ length: total }, (_, i) => {
+      const k = i + 1;
+      const cls = k <= clampedDone ? "done" : i === clampedDone ? "curr" : "";
+      const leftPct = slotPos(k).toFixed(2);
+      return `<span class="${cls}" style="left:${leftPct}%">${k <= clampedDone ? "✓ Q" + k : "Q" + k}</span>`;
     }).join("");
+    dots.innerHTML = startSpan + qSpans;
   }
 }
 
@@ -151,34 +303,41 @@ function renderQuestion() {
 }
 
 function renderProfileTags() {
-  const picked = questions.filter(q => answers[q.id]);
-  $("tagCountText").textContent = `${picked.length} / ${questions.length || 7} 태그 발권됨`;
-  if (!picked.length) {
-    $("profile").innerHTML = '<div class="luggage-empty">왼쪽 체크인 질문을 선택하면<br>실제 공항 수하물 태그(IATA 규격) 7개가<br>파도처럼 일렁이며 한눈에 부착됩니다!</div>';
+  const totalSlots = questions.length || 7;
+  const pickedCount = questions.filter(q => answers[q.id]).length;
+  $("tagCountText").textContent = `${pickedCount} / ${totalSlots} 태그 발권됨`;
+
+  if (!pickedCount) {
+    $("profile").innerHTML = '<div class="luggage-empty">왼쪽 체크인 질문을 선택하면<br>흩어진 취향 데이터가 공항 수하물 태그(IATA)로<br>하나씩 모여 나만의 김해 여행을 완성합니다!</div>';
     return;
   }
-  $("profile").innerHTML = picked.map((q, i) => {
-    const choice = answers[q.id];
+
+  $("profile").innerHTML = Array.from({ length: totalSlots }, (_, i) => {
+    const q = questions[i];
+    const choice = q && answers[q.id];
     const accent = TAG_ACCENTS[i % TAG_ACCENTS.length];
-    const serial = `016-G${i + 1}${choice}`;
-    return `
-      <div class="iata-bag-tag" style="--tag-accent:${accent}; animation-delay: 0s, ${i * 0.18}s">
-        <div class="iata-hole-strip">
-          <span class="iata-grommet"></span>
-        </div>
-        <div class="iata-body">
-          <div class="iata-meta">
-            <span><b>KWJ</b> ➔ <b>PUS</b></span>
-            <span>GATE ${choice} · 0${i + 1}</span>
+    if (choice) {
+      const serial = `016-G${i + 1}${choice}`;
+      return `
+        <div class="iata-bag-tag" style="--tag-accent:${accent}; animation-delay: 0s, ${i * 0.18}s">
+          <div class="iata-hole-strip">
+            <span class="iata-grommet"></span>
           </div>
-          <div class="iata-label">#${esc(q.options[choice].label)}</div>
+          <div class="iata-body">
+            <div class="iata-meta">
+              <span><b>KWJ</b> ➔ <b>PUS</b></span>
+              <span>GATE ${choice} · 0${i + 1}</span>
+            </div>
+            <div class="iata-label">#${esc(q.options[choice].label)}</div>
+          </div>
+          <div class="iata-barcode-stub">
+            <div class="iata-barcode-lines"></div>
+            <span class="iata-serial">${serial}</span>
+          </div>
         </div>
-        <div class="iata-barcode-stub">
-          <div class="iata-barcode-lines"></div>
-          <span class="iata-serial">${serial}</span>
-        </div>
-      </div>
-    `;
+      `;
+    }
+    return `<div class="iata-bag-slot" aria-hidden="true"></div>`;
   }).join("");
 }
 
@@ -301,63 +460,136 @@ function windowVisual(p, i) {
   `;
 }
 
-function getDeckPositionClass(cardIndex, activeIndex, total) {
-  const diff = (cardIndex - activeIndex + total) % total;
-  if (diff === 0) return "is-center";
-  if (diff === 1) return "is-next";
-  if (diff === total - 1) return "is-prev";
-  if (diff === 2) return "is-far-next";
-  return "is-far-prev";
+// ---------- 리볼버 실린더 3D 연속 회전 & 관성 스와이프 엔진 ----------
+let deckPosition = 0;      // 실수형 연속 실린더 위치 (예: 0.0, 1.35, 4.82 ...)
+let targetDeckPos = 0;     // 목표 스냅 인덱스
+let deckAnimId = null;     // requestAnimationFrame 핸들
+let deckLastFrameTime = 0;
+
+function updateCylinderLayout() {
+  if (!places.length) return;
+  const total = places.length;
+  const activeIdx = ((Math.round(deckPosition) % total) + total) % total;
+  selected = activeIdx;
+
+  const cards = $("recoBox")?.querySelectorAll(".cabin-window-card");
+  if (cards && cards.length) {
+    const half = total / 2;
+    cards.forEach((card, i) => {
+      // 위·아래(상하) 수직 카드 덱 순환 오프셋 (3D 교차 X 현상 없는 깔끔한 세로 셔플)
+      let rel = (((i - deckPosition) % total) + total) % total;
+      if (rel > half) rel -= total;
+      const absRel = Math.abs(rel);
+
+      const yPct = rel * 42;                                      // 카드 중심 간 수직 간격 (%)
+      const scale = Math.max(0.84, 1 - absRel * 0.11);            // 원근 스케일 (정면 1.0, 위/아래 0.89)
+      const opacity = absRel >= 1.25 ? 0 : Math.max(0, 1 - absRel * 0.62);
+      const zIdx = Math.round(100 - absRel * 40);
+
+      card.style.transform = `translate3d(0px, ${yPct.toFixed(2)}%, 0px) scale(${scale.toFixed(3)})`;
+      card.style.opacity = opacity.toFixed(3);
+      card.style.zIndex = String(zIdx);
+      card.style.pointerEvents = absRel >= 1.25 ? "none" : "auto";
+      card.classList.toggle("is-center", absRel < 0.35);
+    });
+  }
+
+  const dots = $("deckDots")?.querySelectorAll(".deck-dot");
+  if (dots && dots.length) {
+    dots.forEach((dot, i) => dot.classList.toggle("active", i === activeIdx));
+  }
+}
+
+function stopCylinderAnim() {
+  if (deckAnimId !== null) {
+    cancelAnimationFrame(deckAnimId);
+    deckAnimId = null;
+  }
+}
+
+function animateCylinderToTarget(now) {
+  const dt = Math.min(0.05, Math.max(0.004, (now - deckLastFrameTime) / 1000));
+  deckLastFrameTime = now;
+
+  const diff = targetDeckPos - deckPosition;
+  if (Math.abs(diff) < 0.0025) {
+    deckPosition = targetDeckPos;
+    updateCylinderLayout();
+    deckAnimId = null;
+    return;
+  }
+
+  // 리볼버 실린더가 휘리릭 돌다가 목표 슬롯에 부드럽게 감속하며 안착하는 지수 감쇠 곡선
+  const decay = 1 - Math.exp(-7.8 * dt);
+  deckPosition += diff * decay;
+  updateCylinderLayout();
+  deckAnimId = requestAnimationFrame(animateCylinderToTarget);
+}
+
+function spinDeckBy(deltaSteps) {
+  if (!places.length) return;
+  targetDeckPos = Math.round(deckPosition + deltaSteps);
+  if (deckAnimId === null) {
+    deckLastFrameTime = performance.now();
+    deckAnimId = requestAnimationFrame(animateCylinderToTarget);
+  }
+  armIdleReset();
 }
 
 function selectDeckCard(newIndex) {
   if (!places.length) return;
   const total = places.length;
-  selected = ((newIndex % total) + total) % total;
-  const cards = $("recoBox").querySelectorAll(".cabin-window-card");
-  cards.forEach((card, i) => {
-    card.className = `cabin-window-card ${getDeckPositionClass(i, selected, total)}`;
-  });
-  const dots = $("deckDots").querySelectorAll(".deck-dot");
-  dots.forEach((dot, i) => dot.classList.toggle("active", i === selected));
+  const normTarget = ((newIndex % total) + total) % total;
+  const currMod = ((deckPosition % total) + total) % total;
+  let shortestDiff = normTarget - currMod;
+  if (shortestDiff > total / 2) shortestDiff -= total;
+  if (shortestDiff < -total / 2) shortestDiff += total;
+  targetDeckPos = Math.round(deckPosition + shortestDiff);
+  if (deckAnimId === null) {
+    deckLastFrameTime = performance.now();
+    deckAnimId = requestAnimationFrame(animateCylinderToTarget);
+  }
   armIdleReset();
 }
 
 function renderStage2Candidates() {
   const total = places.length;
-  $("recoBox").innerHTML = places.map((p, i) => {
-    const posClass = getDeckPositionClass(i, selected, total);
-    const tagsHtml = (p.matching_tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join("");
-    return `
-      <article class="cabin-window-card ${posClass}" data-idx="${i}">
-        <div>
-          <div class="window-card-top">
-            <span class="window-seat-pill">WINDOW SEAT 0${i + 1} · 추천 0${i + 1} / 0${total}</span>
-            <span style="font-size:0.76rem;color:#9ec0de;font-weight:700">◀ 스와이프하여 넘기기 ▶</span>
-          </div>
+  stopCylinderAnim();
+  deckPosition = selected;
+  targetDeckPos = selected;
 
+  $("recoBox").innerHTML = places.map((p, i) => {
+    const tagsHtml = (p.matching_tags || []).map(t => `<span class="tag">#${esc(t)}</span>`).join("");
+    const isPlayed = playedPlaces.has(p.place_id);
+    return `
+      <article class="cabin-window-card ${i === selected ? "is-center" : ""}" data-idx="${i}">
+        <div class="window-card-top">
+          <span class="window-seat-pill">${isPlayed ? "✅ 상영 완료 · " : ""}WINDOW SEAT 0${i + 1} · 추천 0${i + 1} / 0${total}</span>
+          <span style="font-size:0.72rem;color:#6f8675;font-weight:800">▲ 위·아래로 밀어 셔플 ▼</span>
+        </div>
+
+        <div class="window-card-body">
           <div class="airplane-window-frame">
             <div class="airplane-window-glass">
               ${windowVisual(p, i)}
             </div>
           </div>
 
-          <div class="window-place-header">
-            <h3 class="window-place-title">✈️ ${esc(p.place_name)}</h3>
-            <span class="window-place-code">SELECTED DESTINATION</span>
+          <div class="window-card-info">
+            <div class="window-place-header">
+              <h3 class="window-place-title">✈️ ${esc(p.place_name)}</h3>
+              <span class="window-place-code">PUS · GIMHAE</span>
+            </div>
+
+            <div class="window-tags-row">${tagsHtml}</div>
+
+            <div class="window-reason-box">${esc(p.recommend_reason)}</div>
           </div>
-
-          <div class="window-tags-row">${tagsHtml}</div>
-
-          <div class="window-reason-box">${esc(p.recommend_reason)}</div>
         </div>
 
-        <div>
-          <p class="window-ask-prompt">✨ 이곳으로 떠나실래요? 창밖의 풍경이 앞쪽 메인 모니터에 펼쳐집니다!</p>
-          <button class="launch-video-btn" type="button" data-launch="${i}">
-            🛫 이곳으로 비행하시겠습니까? (비행 출발!)
-          </button>
-        </div>
+        <button class="launch-video-btn${isPlayed ? " played" : ""}" type="button" data-launch="${i}">
+          ${isPlayed ? "📺 메인 모니터 상영 완료 · 다시 재생하기" : "🛫 이곳으로 비행하시겠습니까? (비행 출발!)"}
+        </button>
       </article>
     `;
   }).join("");
@@ -365,6 +597,8 @@ function renderStage2Candidates() {
   $("deckDots").innerHTML = places.map((_, i) =>
     `<button type="button" class="deck-dot ${i === selected ? "active" : ""}" data-dot="${i}" aria-label="추천지 ${i + 1}"></button>`
   ).join("");
+
+  updateCylinderLayout();
 
   $("recoBox").querySelectorAll(".cabin-window-card").forEach(card => {
     card.onclick = e => {
@@ -388,87 +622,93 @@ function renderStage2Candidates() {
     dot.onclick = () => selectDeckCard(Number(dot.dataset.dot));
   });
 
-  $("prevCardBtn").onclick = () => selectDeckCard(selected - 1);
-  $("nextCardBtn").onclick = () => selectDeckCard(selected + 1);
+  $("prevCardBtn").onclick = () => spinDeckBy(-1);
+  $("nextCardBtn").onclick = () => spinDeckBy(1);
 }
 
-// 터치(Touch) 및 포인터(Pointer) 드래그 실시간 반응 + 고감도 무한 순환 스와이프 지원
+// 터치(Touch) 및 포인터(Pointer) 상하(위·아래) 드래그 실시간 반응 + 수직 카드 덱 관성 스핀
 (function initDeckSwipe() {
-  let startX = null;
-  let startY = null;
-  let currentDx = 0;
-  let swipedInGesture = false;
-  const SWIPE_THRESHOLD = 18; // 가벼운 스와이프에도 즉시 넘어가도록 민감도 대폭 향상
-
-  function applyLiveDrag(dx) {
-    const centerCard = $("recoBox")?.querySelector(".cabin-window-card.is-center");
-    if (!centerCard) return;
-    const clamped = Math.max(-140, Math.min(140, dx));
-    const rot = (clamped / 140) * 4.5;
-    centerCard.style.transition = "none";
-    centerCard.style.transform = `translateX(${clamped * 0.55}px) scale(1) rotate(${rot}deg)`;
-  }
-
-  function clearLiveDrag() {
-    const cards = $("recoBox")?.querySelectorAll(".cabin-window-card");
-    if (!cards) return;
-    cards.forEach(c => {
-      c.style.transition = "";
-      c.style.transform = "";
-    });
-  }
+  let isDragging = false;
+  let startX = 0;
+  let startY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let lastTime = 0;
+  let dragStartDeckPos = 0;
+  let velocityCardsPerMs = 0; // 밀리초당 회전 카드 속도
+  const PIXELS_PER_CARD = 260; // 260px 상하 드래그 당 1칸 회전
+  const MIN_SWIPE_PX = 42;     // 가벼운 터치 흔들림 방지 최소 스와이프 거리
 
   function handleStart(x, y, target) {
     if (!target.closest("#deckViewport")) return;
     if (target.closest("[data-launch]")) return;
+    stopCylinderAnim();
+    isDragging = true;
     startX = x;
     startY = y;
-    currentDx = 0;
-    swipedInGesture = false;
+    lastX = x;
+    lastY = y;
+    lastTime = performance.now();
+    dragStartDeckPos = deckPosition;
+    velocityCardsPerMs = 0;
   }
 
   function handleMove(x, y) {
-    if (startX === null || swipedInGesture) return;
+    if (!isDragging) return;
     const dx = x - startX;
     const dy = y - startY;
-    if (Math.abs(dx) < Math.abs(dy) && Math.abs(dy) > 25) return;
-    currentDx = dx;
-    applyLiveDrag(dx);
+    // 위·아래(dy) 드래그를 기본으로 하되, 좌우로 밀어도 반응하도록 주 이동축(primaryDelta) 사용
+    const primaryDelta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+    if (Math.abs(primaryDelta) < 8) return;
 
-    // 손가락을 떼기 전이라도 일정 거리(55px) 이상 밀면 즉시 다음/이전 카드로 무한 순환 전환
-    if (Math.abs(dx) > 55) {
-      swipedInGesture = true;
-      clearLiveDrag();
-      if (dx < 0) selectDeckCard(selected + 1); // 5번에서 왼쪽으로 밀면 1번으로 즉시 순환
-      else selectDeckCard(selected - 1);        // 1번에서 오른쪽으로 밀면 5번으로 즉시 순환
-    }
+    const now = performance.now();
+    const dt = Math.max(8, now - lastTime);
+    const stepDelta = Math.abs(dy) >= Math.abs(dx) ? (y - lastY) : (x - lastX);
+    const instVel = (-stepDelta / PIXELS_PER_CARD) / dt; // 위로 밀면(+) 다음 창문 방향으로 회전
+    velocityCardsPerMs = velocityCardsPerMs * 0.6 + instVel * 0.4;
+
+    lastX = x;
+    lastY = y;
+    lastTime = now;
+
+    // 손가락 상하 이동 거리만큼 실시간으로 세로 덱 회전
+    deckPosition = dragStartDeckPos - primaryDelta / PIXELS_PER_CARD;
+    updateCylinderLayout();
   }
 
   function handleEnd() {
-    if (startX === null) return;
-    const dx = currentDx;
-    startX = null;
-    startY = null;
-    currentDx = 0;
-    clearLiveDrag();
-    if (!swipedInGesture && Math.abs(dx) > SWIPE_THRESHOLD) {
-      if (dx < 0) selectDeckCard(selected + 1);
-      else selectDeckCard(selected - 1);
+    if (!isDragging) return;
+    isDragging = false;
+    const totalDx = lastX - startX;
+    const totalDy = lastY - startY;
+    const totalDelta = Math.abs(totalDy) >= Math.abs(totalDx) ? totalDy : totalDx;
+    const elapsedSinceMove = performance.now() - lastTime;
+    const rawVel = (elapsedSinceMove < 80 ? velocityCardsPerMs * 1000 : 0);
+
+    // 일반 스와이프는 정확히 1칸씩 넘어가고, 빠르게 세게 튕겼을 때만 2~4칸 회전
+    const effectiveVel = Math.abs(rawVel) < 1.35 ? 0 : rawVel;
+    const momentumCards = Math.max(-4, Math.min(4, effectiveVel * 0.22));
+    let nextTarget = Math.round(deckPosition + momentumCards);
+
+    if (nextTarget === Math.round(dragStartDeckPos) && Math.abs(totalDelta) >= MIN_SWIPE_PX) {
+      nextTarget = Math.round(dragStartDeckPos) + (totalDelta < 0 ? 1 : -1);
     }
-    swipedInGesture = false;
+
+    targetDeckPos = nextTarget;
+    deckLastFrameTime = performance.now();
+    deckAnimId = requestAnimationFrame(animateCylinderToTarget);
+    armIdleReset();
   }
 
-  // 모바일/태블릿 터치 이벤트 (브라우저 가로 제스처 가로채기 방지 포함)
+  // 모바일/태블릿 터치 이벤트 (덱 영역 내 상하 스와이프 시 화면 스크롤 방지)
   document.addEventListener("touchstart", e => {
     if (!e.touches.length) return;
     handleStart(e.touches[0].clientX, e.touches[0].clientY, e.target);
   }, { passive: true });
 
   document.addEventListener("touchmove", e => {
-    if (startX === null || !e.touches.length) return;
-    const dx = e.touches[0].clientX - startX;
-    const dy = e.touches[0].clientY - startY;
-    if (Math.abs(dx) > Math.abs(dy)) e.preventDefault();
+    if (!isDragging || !e.touches.length) return;
+    e.preventDefault();
     handleMove(e.touches[0].clientX, e.touches[0].clientY);
   }, { passive: false });
 
@@ -502,12 +742,14 @@ async function ensureTask(p) {
 
 function triggerJetBoost(bonusMiles) {
   miles += bonusMiles;
-  $("hudAlt").textContent = `ALTITUDE · ${(10500 + Math.min(miles, 4500)).toLocaleString()} FT`;
-  $("hudSpeed").textContent = `SPEED · ${780 + Math.min(Math.round(miles / 5), 240)} KM/H`;
+  if ($("hudAlt")) $("hudAlt").textContent = `ALTITUDE · ${(10500 + Math.min(miles, 4500)).toLocaleString()} FT`;
+  if ($("hudSpeed")) $("hudSpeed").textContent = `SPEED · ${780 + Math.min(Math.round(miles / 5), 240)} KM/H`;
   const jet = $("flyingJet");
-  jet.classList.remove("boost");
-  void jet.offsetWidth;
-  jet.classList.add("boost");
+  if (jet) {
+    jet.classList.remove("boost");
+    void jet.offsetWidth;
+    jet.classList.add("boost");
+  }
 }
 
 function spawnSkyToken() {
@@ -546,17 +788,128 @@ function setupMagazineTips(p) {
   };
 }
 
+function buildLoadingRotationSteps(p) {
+  const sentences = String(p.recommend_reason || "")
+    .split(/(?<=[.!?])\s+/)
+    .map(s => s.trim())
+    .filter(Boolean);
+  const tags = (p.matching_tags || []).slice(0, 3).map(t => `#${t}`).join(" ");
+  return [
+    {
+      headlineHtml: `&ldquo;검색은 줄이고, <span>설렘만 남기다.</span>&rdquo;`,
+      subHtml: `잘 알려지지 않은 김해의 숨겨진 매력 속에서, 오직 <b>당신만을 위한 '${esc(p.place_name)}' 여행 영상</b>을 깨우고 있습니다.`,
+      stageTag: `STEP 01 · 맞춤 여정 분석`,
+      flapText: sentences[0] || `'${p.place_name}'의 숨은 풍경과 추천 코스를 불러오는 중입니다.`,
+      hintText: `🎬 '${p.place_name}' AI 여행 영상을 생성 중입니다... 완료 즉시 앞쪽 메인 모니터에 상영됩니다!`
+    },
+    {
+      headlineHtml: `&ldquo;스쳐 지나가던 지역이, <span>특별한 목적지로.</span>&rdquo;`,
+      subHtml: tags
+        ? `선택하신 취향 키워드(<b>${esc(tags)}</b>)와 가장 깊이 맞닿은 <b>${esc(p.place_name)}</b>의 장면을 담고 있습니다.`
+        : `잘 알려지지 않은 김해의 구석구석에서 <b>${esc(p.place_name)}</b>만의 고유한 순간을 엮고 있습니다.`,
+      stageTag: `STEP 02 · 추천 이유 01`,
+      flapText: sentences[1] || sentences[0] || `'${p.place_name}' 맞춤형 비행 장면을 렌더링하고 있습니다.`,
+      hintText: `✈️ 기장 토더기가 '${p.place_name}' 상공의 시선을 영상으로 다듬고 있어요...`
+    },
+    {
+      headlineHtml: `&ldquo;흩어진 데이터를 모아, <span>당신만의 여행을 완성하다.</span>&rdquo;`,
+      subHtml: `숨겨진 관광지의 생생한 이야기에 <b>${esc(p.place_name)}</b>만의 다채로운 매력을 더하고 있습니다.`,
+      stageTag: `STEP 03 · 추천 이유 02`,
+      flapText: sentences[2] || sentences[1] || `흩어진 데이터를 모아, 당신만의 김해 여행을 완성하고 있습니다.`,
+      hintText: `🎥 고화질 AI 여행 영상 송출을 준비하는 중입니다... 잠시만 기다려 주세요!`
+    },
+    {
+      headlineHtml: `&ldquo;잠시 후, <span>나만의 김해가 펼쳐집니다.</span>&rdquo;`,
+      subHtml: `곧 <b>앞쪽 메인 모니터</b>에서 기장 토더기와 함께하는 <b>${esc(p.place_name)}</b> 비행이 시작됩니다!`,
+      stageTag: `STEP 04 · 메인 모니터 송출`,
+      flapText: `잠시 후 앞쪽 메인 모니터에서 '${p.place_name}' 영상이 상영됩니다!`,
+      hintText: `📺 곧 앞쪽의 전용 전시 모니터에서 영상이 시작됩니다!`
+    }
+  ];
+}
+
+function renderKineticMessage(stageTag, messageText, placeName, animate) {
+  const pillEl = $("introStepPill");
+  const lineEl = $("introKineticLine");
+  if (!lineEl) return;
+
+  const words = String(messageText || "").trim().split(/\s+/).filter(Boolean);
+  const paintKinetic = () => {
+    if (pillEl) {
+      pillEl.textContent = `✦ ${stageTag}`;
+      pillEl.classList.remove("text-switching");
+    }
+    lineEl.innerHTML = words.map((w, i) => {
+      const isHighlight = (placeName && w.includes(placeName)) || w.startsWith("#") || /(김해|완료|상영|매력|풍경|여행|특별)/.test(w);
+      return `<span class="k-word-mask"><span class="k-word${isHighlight ? " highlight" : ""}" style="animation-delay:${i * 32}ms">${esc(w)}</span></span>`;
+    }).join("");
+    lineEl.classList.remove("text-switching");
+  };
+
+  if (!animate) {
+    paintKinetic();
+    return;
+  }
+
+  if (pillEl) pillEl.classList.add("text-switching");
+  lineEl.classList.add("text-switching");
+  clearTimeout(kineticSwitchTimer);
+  kineticSwitchTimer = setTimeout(paintKinetic, 210);
+}
+
+function applyLoadingStep(stepObj, placeName, animate) {
+  const headline = $("introHeadline");
+  const sub = $("introSubcopy");
+  const hint = $("introSkipHint");
+  renderKineticMessage(stepObj.stageTag, stepObj.flapText, placeName, animate);
+
+  // 상단 헤드라인·서브카피·하단 힌트는 초기 1회만 세팅하고 고정하여 화면 전체가 깜빡이는 느낌 제거
+  if (!animate) {
+    if (headline) headline.innerHTML = stepObj.headlineHtml;
+    if (sub) sub.innerHTML = stepObj.subHtml;
+    if (hint) hint.textContent = stepObj.hintText;
+  }
+}
+
 async function startInflightVideoStage(p) {
   const token = ++viewToken;
   clearInterval(waitInterval);
   clearInterval(tokenSpawnInterval);
+  clearTimeout(introTimer);
+  clearInterval(loadingMsgInterval);
+  clearTimeout(kineticSwitchTimer);
   setStage(3);
   armIdleReset();
 
-  $("headerBubble").textContent = `기장 토더기와 함께 '${p.place_name}' 상공을 비행하고 있어요! 하늘의 아이템을 터치해 마일리지를 모아보세요.`;
-  $("inflightTitle").textContent = `${p.place_name} 상공 순항 중`;
-  $("hudRoute").textContent = `ROUTE · KWJ ➔ PUS`;
+  $("headerBubble").textContent = `기장 토더기가 '${p.place_name}' 맞춤형 여행 영상을 준비하고 있어요! 앞쪽 메인 모니터를 주목해 주세요.`;
+  if ($("inflightTitle")) $("inflightTitle").textContent = `${p.place_name} 맞춤형 여행 영상 준비 중`;
+  if ($("hudRoute")) $("hudRoute").textContent = `ROUTE · KWJ ➔ PUS`;
 
+  // STEP 3 진입 시 영상이 생성되기 전까지 LocalRise 브랜드 로딩 화면(#introOverlay) + SANKOU! 키네틱 문구 로테이션 표시
+  const intro = $("introOverlay");
+  const introBar = $("introProgressBar");
+  const introBadge = $("introBadge");
+  const introHint = $("introSkipHint");
+  if (introBadge) introBadge.textContent = `✈️ AI VIDEO RENDERING · ${p.place_name}`;
+  if (intro) {
+    intro.classList.remove("hidden");
+    if (introBar) {
+      introBar.style.transition = "none";
+      introBar.style.width = "8%";
+    }
+  }
+
+  const rotationSteps = buildLoadingRotationSteps(p);
+  let rotIdx = 0;
+  applyLoadingStep(rotationSteps[0], p.place_name, false);
+
+  loadingMsgInterval = setInterval(() => {
+    if (token !== viewToken) { clearInterval(loadingMsgInterval); return; }
+    rotIdx = (rotIdx + 1) % rotationSteps.length;
+    applyLoadingStep(rotationSteps[rotIdx], p.place_name, true);
+  }, 2400);
+
+  /* [주석 처리 - 안내 보드(#stage3) 관련 마일리지·매거진·모니터 보드 UI 바인딩 (stage3_inflight_info.archive.html 분리 보관)]
   // 여권 스탬프 초기화
   const stampBtn = $("passportStampBtn");
   stampBtn.classList.remove("stamped");
@@ -587,37 +940,39 @@ async function startInflightVideoStage(p) {
   // 기내 매거진 포인트 세팅
   setupMagazineTips(p);
 
-  // 하늘 위 날아다니는 황금 아이템 주기적 스폰
-  $("skyTokenLayer").innerHTML = "";
-  spawnSkyToken();
-  tokenSpawnInterval = setInterval(spawnSkyToken, 2400);
-
   // 모니터 상태 및 60초 비행 카운트다운 게이지 시작
   const tvBadge = $("tvStatusBadge");
   tvBadge.classList.remove("ready");
-  tvBadge.textContent = "📡 MAIN MONITOR · 착륙 및 여행 안내 준비 중";
+  tvBadge.textContent = "📡 MAIN MONITOR · 영상 생성 및 송출 준비 중";
   $("tvHeadline").textContent = "앞쪽의 전용 모니터를 주목해 주세요!";
-  $("tvSubtext").innerHTML = `기장 토더기가 <b>${esc(p.place_name)}</b>의 생생한 여행 풍경을 준비하고 있습니다.<br>착륙과 동시에 <b>앞쪽 메인 모니터</b>에서 나만의 김해 여행이 펼쳐집니다.`;
+  $("tvSubtext").innerHTML = `기장 토더기가 <b>${esc(p.place_name)}</b>의 생생한 여행 풍경을 준비하고 있습니다.<br>생성이 완료되는 즉시 <b>앞쪽 메인 모니터</b>에서 나만의 김해 여행이 펼쳐집니다.`;
+  */
 
+  const startedAt = performance.now();
+  const MIN_SHOWCASE_MS = 6800; // 캐시 응답이 즉시 와도 공항 플립보드 순환 문구를 충분히 감상할 시간 확보
   let elapsed = 0;
   const maxSeconds = 60;
   let videoReady = false;
 
   const updateTimerUI = () => {
+    const pct = (videoReady && performance.now() - startedAt >= MIN_SHOWCASE_MS)
+      ? 100
+      : Math.min(96, Math.max(8, Math.round(((elapsed + 0.6) / 7.5) * 90)));
+    if (introBar) {
+      introBar.style.transition = "width 0.9s ease";
+      introBar.style.width = `${pct}%`;
+    }
+    /* [주석 처리 - 안내 보드(#stage3) 카운트다운 & 마일리지 게이지]
     const remain = Math.max(0, maxSeconds - elapsed);
-    const pct = videoReady ? 100 : Math.min(96, Math.round((elapsed / maxSeconds) * 100));
     $("renderBarFill").style.width = `${pct}%`;
     $("renderPctText").textContent = `${pct}%`;
     $("countdownPill").textContent = videoReady
-      ? `✅ 목적지 도착 완료! · 누적 마일리지 ${miles.toLocaleString()} M`
-      : `⏱ 도착까지 약 ${remain}초 · 마일리지 ${miles.toLocaleString()} M`;
+      ? `✅ 영상 준비 완료! · 누적 마일리지 ${miles.toLocaleString()} M`
+      : `⏱ 영상 생성 중 (약 ${remain}초) · 마일리지 ${miles.toLocaleString()} M`;
     if (!videoReady) {
-      $("renderStatusText").textContent = elapsed < 20
-        ? `✈️ [이륙 및 상승] KWJ를 출발해 '${p.place_name}' 항로로 순항하고 있습니다...`
-        : elapsed < 45
-        ? `☁️ [안정 순항] 기장 토더기가 '${p.place_name}' 상공의 구름 위를 날고 있습니다...`
-        : `🛬 [착륙 준비] 곧 목적지에 도착합니다! 앞쪽 메인 모니터를 확인해 주세요...`;
+      $("renderStatusText").textContent = `🎬 '${p.place_name}' AI 맞춤 여행 영상을 생성하여 메인 모니터로 전송하고 있습니다... (${pct}%)`;
     }
+    */
   };
   updateTimerUI();
 
@@ -640,19 +995,58 @@ async function startInflightVideoStage(p) {
     if (token !== viewToken) return;
     if (t.result && (t.result.video_url || t.result.image_url)) {
       videoReady = true;
-      updateTimerUI();
-      $("renderStatusText").textContent = `🎉 '${p.place_name}' 도착 완료! 지금 앞쪽 메인 모니터를 확인해 주세요!`;
+      playedPlaces.add(p.place_id);
+      const waitRemaining = Math.max(0, MIN_SHOWCASE_MS - (performance.now() - startedAt));
+      clearTimeout(introTimer);
+      introTimer = setTimeout(() => {
+        if (token !== viewToken) return;
+        clearInterval(loadingMsgInterval);
+        updateTimerUI();
+        renderKineticMessage("ARRIVAL READY · 상영 준비 완료", `'${p.place_name}' 영상 준비 완료! 앞쪽 메인 모니터를 확인해 주세요!`, p.place_name, true);
+        if (introHint) {
+          introHint.textContent = `🎉 '${p.place_name}' 영상 생성 완료! 지금 앞쪽 메인 모니터에서 영상을 확인해 주세요!`;
+        }
+        setTimeout(() => {
+          if (token === viewToken) finishIntroOverlay();
+        }, 1400);
+      }, waitRemaining);
+
+      /* [주석 처리 - 안내 보드(#stage3) 완료 상태 텍스트]
+      $("renderStatusText").textContent = `🎉 '${p.place_name}' 영상 준비 완료! 지금 앞쪽 메인 모니터를 확인해 주세요!`;
       tvBadge.classList.add("ready");
       tvBadge.textContent = "✅ MAIN MONITOR · 여행 풍경 상영 중";
-      $("tvHeadline").textContent = `🎬 '${p.place_name}'에 도착했습니다!`;
-      $("tvSubtext").innerHTML = `지금 고개를 들어 <b>앞쪽의 전시 모니터</b>에서 토더기가 여행하는 모습을 감상해 보세요!<br>다른 여행지도 떠나보고 싶다면 상단 <b>STEP 2</b> 탭을 눌러 언제든 이동할 수 있습니다.`;
+      $("tvHeadline").textContent = `🎬 '${p.place_name}' 영상이 상영 중입니다!`;
+      $("tvSubtext").innerHTML = `지금 고개를 들어 <b>앞쪽의 전시 모니터</b>에서 토더기가 여행하는 모습을 감상해 보세요!<br>다른 여행지도 떠나보고 싶다면 아래 버튼으로 언제든 이동할 수 있습니다.`;
+      */
+    } else {
+      const waitRemaining = Math.max(0, MIN_SHOWCASE_MS - (performance.now() - startedAt));
+      clearTimeout(introTimer);
+      introTimer = setTimeout(() => {
+        if (token !== viewToken) return;
+        if (introHint) {
+          introHint.textContent = `📺 앞쪽 메인 모니터에서 '${p.place_name}' 여행 안내가 준비되고 있습니다.`;
+        }
+        setTimeout(() => {
+          if (token === viewToken) finishIntroOverlay();
+        }, 1400);
+      }, waitRemaining);
     }
   } catch (e) {
-    // 네트워크·서버 지연 시에도 관람객 비행 체험은 끊김 없이 유지
+    // 네트워크·서버 지연 시에도 관람객 체험 흐름 유지
+    clearTimeout(introTimer);
+    introTimer = setTimeout(() => {
+      if (token === viewToken) finishIntroOverlay();
+    }, 3500);
   }
 }
 
-function armIdleReset() { clearTimeout(idleTimer); idleTimer = setTimeout(startSurvey, IDLE_RESET_MS); }
-document.addEventListener("pointerdown", () => { if (places.length) armIdleReset(); });
+function armIdleReset() {
+  clearTimeout(idleTimer);
+  idleTimer = setTimeout(showStandbyScreen, IDLE_RESET_MS);
+}
+document.addEventListener("pointerdown", () => {
+  const overlay = $("standbyOverlay");
+  if (overlay && overlay.classList.contains("hidden")) armIdleReset();
+});
 
 startSurvey();

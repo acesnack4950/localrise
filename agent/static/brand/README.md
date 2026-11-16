@@ -11,5 +11,8 @@
 | todeogi_thumbsup.png | A. 베이직 / 05. 따봉 | 성향 요약 |
 | todeogi_camera.png | K. 여가활동 / 06. 카메라 | STEP 3 대기 |
 | todeogi_travel.png | K. 여가활동 / 07. 여행 | STEP 3 영상 준비 중 |
+| todeogi_plane.png | K. 여가활동 / 08. 비행기 | 대기 화면 & 스타트 인트로 |
+| todeogi_cheer.png | A. 베이직 / 14. 응원 | 피날레 응원 화면 |
+| todeogi_vote.png | G. 태극기&선거 / 04. 선거01 | 투표 독려 배너 |
 
 화면용으로 바깥 흰 배경만 투명 처리하고 크기만 줄였음 (캐릭터 모양은 그대로).

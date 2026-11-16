@@ -793,7 +793,7 @@ app.include_router(video_jobs.router)
 
 @app.get("/", include_in_schema=False)
 def index():
-    page = path("static", "index.html")
+    page = path("static", "airport.html")
     if os.path.exists(page):
         return FileResponse(page)
     return {"message": "LocalRise API", "docs": "/docs"}

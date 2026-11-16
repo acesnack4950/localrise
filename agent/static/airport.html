@@ -5,22 +5,155 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>TEAM LocalRise · LocalRise Airlines 김해행 특별기</title>
+<title>LocalRise · 흩어진 데이터를 모아, 당신만의 여행을 완성하다</title>
 <!-- 전시장 인터넷이 끊겨도 동작하도록 외부 폰트·스크립트를 쓰지 않고 로컬 CSS/JS로 분리 구성 -->
-<link rel="stylesheet" href="/static/airport.css">
+<link rel="stylesheet" href="/static/airport.css?v=revolver23">
 </head>
 <body>
+
+<!-- ==================== STANDBY SCREEN: SANKOU! 레퍼런스 감성 × PPT 브랜딩 대기 화면 ==================== -->
+<div class="standby-overlay" id="standbyOverlay" role="button" tabindex="0" aria-label="화면을 터치하여 시작하기">
+  <button class="standby-fs-btn" id="standbyFsBtn" type="button" title="전체화면 전환">⛶ 전체화면</button>
+  <div class="standby-ambient">
+    <span class="ambient-orb orb-green"></span>
+    <span class="ambient-orb orb-orange"></span>
+    <div class="standby-arch"></div>
+    <div class="standby-dots-deco left"></div>
+    <div class="standby-dots-deco right"></div>
+  </div>
+
+  <div class="standby-card">
+    <!-- 중앙 마스코트 히어로 -->
+    <div class="standby-hero-stage">
+      <div class="standby-mascot-center">
+        <span class="mascot-sparkle s1">✦</span>
+        <span class="mascot-sparkle s2">★</span>
+        <img class="standby-hero-todeogi" src="/static/brand/todeogi_plane.png?v=tr2" alt="비행기 탄 기장 토더기" onerror="this.remove()">
+      </div>
+    </div>
+
+    <!-- 압도적 메인 타이틀 LocalRise + 오렌지 스워시 데코 -->
+    <div class="standby-logo-wrap">
+      <div class="standby-logo" aria-label="LocalRise">
+        <span class="logo-local">Local</span><span class="logo-rise">Rise</span>
+      </div>
+      <svg class="standby-logo-swash" viewBox="0 0 420 26" fill="none">
+        <path d="M12 18 Q 210 2 404 16" stroke="#ff8820" stroke-width="5" stroke-linecap="round"/>
+        <circle cx="408" cy="14" r="5" fill="#009a17"/>
+      </svg>
+    </div>
+
+    <p class="standby-slogan">&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</p>
+    <p class="standby-manifesto">잠들어 있던 <b>지역(Local)</b>의 데이터가, 당신의 가장 설레는 여행으로 <b>비상(Rise)</b>합니다.</p>
+
+    <div class="standby-touch-cta">
+      <img src="/static/brand/todeogi_hello.png?v=tr2" alt="" onerror="this.remove()">
+      <div class="touch-cta-text">
+        <strong>TOUCH ANYWHERE TO START · FLIGHT LR-2026</strong>
+        <span>화면을 터치하면 나만의 김해행 특별기 탑승 수속이 시작됩니다 ✈️</span>
+      </div>
+      <span class="cta-go-circle">GO ➔</span>
+    </div>
+  </div>
+
+  <div class="standby-footer">
+    <span>TEAM <b>Local<em class="rise-em">Rise</em></b> · GIMHAE AI TRAVEL EXPERIENCE</span>
+    <span>TOUCH SCREEN TO CHECK-IN · 터치 시 즉시 시작</span>
+  </div>
+</div>
+
+<!-- ==================== STEP 3 VIDEO LOADING OVERLAY: 영상 생성 중 노출되는 LocalRise 브랜드 로딩 화면 ==================== -->
+<div class="intro-overlay hidden" id="introOverlay" role="button" tabindex="0" aria-label="영상 생성 로딩 화면">
+  <div class="standby-ambient">
+    <span class="ambient-orb orb-green"></span>
+    <span class="ambient-orb orb-orange"></span>
+    <div class="standby-arch"></div>
+    <div class="standby-dots-deco left"></div>
+    <div class="standby-dots-deco right"></div>
+  </div>
+
+  <div class="intro-card">
+    <img class="intro-mascot-hero" src="/static/brand/todeogi_plane.png?v=tr2" alt="기장 토더기" onerror="this.remove()">
+    <div class="intro-badge" id="introBadge">✈️ AI FLIGHT PREPARING · TEAM LocalRise × 토더기</div>
+    <h2 class="intro-headline" id="introHeadline">&ldquo;검색은 줄이고, <span>설렘만 남기다.</span>&rdquo;</h2>
+    <p class="intro-subcopy" id="introSubcopy">
+      잘 알려지지 않은 김해의 숨겨진 명소 속에서, 오직 <b>당신만을 위한 단 하나의 김해</b>를 깨웁니다.
+    </p>
+    <div class="intro-brand-lockup">
+      <div class="intro-logo"><span class="logo-local">Local</span><span class="logo-rise">Rise</span></div>
+      <div class="intro-story-box" id="introStoryBox" aria-live="polite">
+        <span class="intro-step-pill" id="introStepPill">✦ STEP 01 · 맞춤 여정 분석</span>
+        <div class="intro-kinetic-line" id="introKineticLine">
+          <span class="k-word-mask"><span class="k-word">김해의</span></span>
+          <span class="k-word-mask"><span class="k-word">숨겨진</span></span>
+          <span class="k-word-mask"><span class="k-word highlight">매력을</span></span>
+          <span class="k-word-mask"><span class="k-word">불러오고</span></span>
+          <span class="k-word-mask"><span class="k-word">있습니다</span></span>
+        </div>
+      </div>
+    </div>
+    <div class="intro-progress-wrap">
+      <div class="intro-progress-bar" id="introProgressBar"></div>
+    </div>
+    <span class="intro-skip-hint" id="introSkipHint">🎬 앞쪽 메인 모니터에 상영할 나만의 김해 여행 영상을 생성하고 있습니다...</span>
+  </div>
+</div>
+
+<!-- ==================== FINALE OVERLAY: 관람객 투표 강조 중심 피날레 & LocalRise 팀 엔딩 ==================== -->
+<div class="finale-overlay hidden" id="finaleOverlay">
+  <div class="standby-ambient">
+    <span class="ambient-orb orb-green"></span>
+    <span class="ambient-orb orb-orange"></span>
+  </div>
+
+  <div class="finale-card">
+    <div class="standby-pill">🛬 FLIGHT LR-2026 LANDED · GIMHAE TRAVEL FINALE</div>
+
+    <div class="finale-vote-box">
+      <img class="finale-vote-mascot" src="/static/brand/todeogi_vote.png?v=tr2" alt="투표하는 토더기" onerror="this.remove()">
+      <div class="finale-vote-content">
+        <div class="vote-box-badge">🗳️ 관람객 현장 투표 · YOUR VOTE MAKES US RISE!</div>
+        <h3>오늘의 김해 비행, 마음에 드셨나요?<br><span>TEAM <b class="logo-local">Local</b><b class="logo-rise">Rise</b></span>에 소중한 한 표를 부탁드립니다!</h3>
+        <p>
+          여러분의 소중한 한 표가 <b>지역의 숨은 매력</b>을 깨우는 가장 큰 원동력이 됩니다.<br>
+          기장 토더기와 함께 즐기신 오늘의 김해 여행을 투표로 응원해 주세요!
+        </p>
+      </div>
+      <img class="finale-vote-mascot" src="/static/brand/todeogi_cheer.png?v=tr2" alt="응원하는 토더기" onerror="this.remove()">
+    </div>
+
+    <div class="finale-course-summary">
+      <span class="course-summary-label">🎫 오늘 만나본 나만의 김해 여행 코스 BEST 5</span>
+      <div class="course-summary-pills" id="finaleCourseList"></div>
+    </div>
+
+    <div class="finale-actions">
+      <button class="finale-secondary-btn" type="button" onclick="closeFinaleToStep2()">← 다른 추천 여행지 더 둘러보기</button>
+      <button class="finale-primary-btn" type="button" onclick="finishAndReturnStandby()">💖 LocalRise 기억하기 &amp; 체험 완료 (첫 화면으로)</button>
+    </div>
+
+    <div class="finale-brand-signoff">
+      <div class="finale-logo" aria-label="LocalRise">
+        <span class="logo-local">Local</span><span class="logo-rise">Rise</span>
+      </div>
+      <p class="finale-slogan">&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</p>
+      <p class="finale-message">스쳐 지나가는 흔한 관광지가 아니라, 당신의 취향으로 기억될 지역의 새로운 비상 &mdash; <b>팀 LocalRise</b></p>
+    </div>
+  </div>
+</div>
+
 <div class="wrap">
-  <!-- 상단 공항 전광판 헤더 -->
+  <!-- 상단 공항 전광판 헤더 (LocalRise 브랜딩 적용) -->
   <header class="airport-header">
     <div class="brand-left">
-      <div class="flight-badge">
+      <div class="flight-badge" onclick="showStandbyScreen()" title="대기 화면으로 전환">
         <small>FLIGHT</small>
         <strong>LR-2026</strong>
       </div>
       <div class="title-box">
-        <h1><b class="team-pill">TEAM LocalRise</b>LocalRise Airlines · <span>김해행 특별기</span></h1>
-        <p class="sub">팀 LocalRise가 당신의 여행 취향을 담아, 설레는 김해로의 특별한 비행 경험을 선물합니다</p>
+        <h1>
+          <span class="brand-word"><b class="logo-local-inv">Local</b><b class="logo-rise">Rise</b></span>
+        </h1>
       </div>
     </div>
 
@@ -32,65 +165,55 @@
     </div>
 
     <div class="header-right">
-      <button class="fs-btn" id="fsBtn" type="button" onclick="toggleFullscreen()">⛶ 전체 화면</button>
+      <button class="fs-btn" id="standbyBtn" type="button" onclick="showStandbyScreen()" title="대기 화면 띄우기">⏸ 대기화면</button>
+      <button class="fs-btn" id="fsBtn" type="button" onclick="toggleFullscreen()">⛶ 전체화면</button>
       <div class="bot">
         <div class="bubble" id="headerBubble">승객님 환영합니다! 기장 토더기가 김해 맞춤 비행 코스를 안내해 드릴게요 ✈️</div>
-        <img src="/static/brand/todeogi_hello.png" alt="" onerror="this.remove()">
+        <img src="/static/brand/todeogi_hello.png?v=tr2" alt="" onerror="this.remove()">
       </div>
     </div>
   </header>
 
-  <!-- 3단계 진행 표시줄 (완료된 단계만 터치 이동 가능) -->
-  <nav class="stepper">
-    <div class="step-pill active" id="stepPill1" onclick="navigateStep(1)">
-      <span class="num">STEP 1</span>
-      <span>셀프 체크인 · 취향 설문</span>
+  <!-- 상단 전광판 스타일 출발(DEPARTURE) · 도착(ARRIVAL) 비행 루트 보드 (기존 STEP 1·2·3 바 위치 대체) -->
+  <div class="runway-wrap fids-runway-bar" id="topRunwayBar">
+    <div class="airport-endpoint dep">
+      <span class="endpoint-role">DEPARTURE · 출발</span>
+      <div class="endpoint-main-row">
+        <strong class="endpoint-iata">KWJ</strong>
+        <span class="endpoint-city">광주 · 김대중컨벤션센터</span>
+      </div>
     </div>
-    <div class="step-pill locked" id="stepPill2" onclick="navigateStep(2)">
-      <span class="num">STEP 2</span>
-      <span>보딩패스 · 추천 여행지 5곳</span>
+
+    <div class="runway-center">
+      <div class="runway-status-row">
+        <b>FLIGHT LR-2026 · GIMHAE EXPRESS</b>
+        <span id="runwayPct">CHECK-IN 0%</span>
+      </div>
+      <div class="runway-track">
+        <div class="runway-fill" id="runwayFill" style="width: 0%"></div>
+        <div class="plane-icon" id="planeIcon" style="left: 0%">✈️</div>
+      </div>
+      <div class="runway-dots" id="runwayDots">
+        <span class="curr" style="left:0.00%">START</span><span class="curr" style="left:14.29%">Q1</span><span style="left:28.57%">Q2</span><span style="left:42.86%">Q3</span><span style="left:57.14%">Q4</span><span style="left:71.43%">Q5</span><span style="left:85.71%">Q6</span><span style="left:100.00%">Q7</span>
+      </div>
     </div>
-    <div class="step-pill locked" id="stepPill3" onclick="navigateStep(3)">
-      <span class="num">STEP 3</span>
-      <span>상공 비행 체험 · 여행 프리뷰</span>
+
+    <div class="airport-endpoint arr">
+      <span class="endpoint-role">ARRIVAL · 도착</span>
+      <div class="endpoint-main-row">
+        <span class="endpoint-city">김해 · GIMHAE</span>
+        <strong class="endpoint-iata">PUS</strong>
+      </div>
     </div>
-  </nav>
+  </div>
 
   <!-- ==================== STAGE 1: 셀프 체크인 & IATA 수하물 태그 ==================== -->
   <section class="stage active" id="stage1">
     <div class="checkin-grid">
       <div class="panel">
         <div class="kiosk-top">
-          <span class="kiosk-badge">✈️ SELF CHECK-IN KIOSK</span>
-          <span style="font-size:.84rem;color:var(--muted);font-weight:700" id="qCounter">1 / 7</span>
-        </div>
-
-        <div class="runway-wrap">
-          <div class="airport-endpoint dep">
-            <span class="endpoint-role">DEPARTURE · 출발</span>
-            <strong class="endpoint-iata">KWJ</strong>
-            <span class="endpoint-city">광주 · 김대중컨벤션센터</span>
-          </div>
-
-          <div class="runway-center">
-            <div class="runway-status-row">
-              <b>FLIGHT LR-2026</b>
-              <span id="runwayPct">CHECK-IN 0%</span>
-            </div>
-            <div class="runway-track">
-              <div class="runway-fill" id="runwayFill" style="width: 0%"></div>
-              <div class="plane-icon" id="planeIcon" style="left: 4%">✈️</div>
-            </div>
-            <div class="runway-dots" id="runwayDots">
-              <span class="curr">Q1</span><span>Q2</span><span>Q3</span><span>Q4</span><span>Q5</span><span>Q6</span><span>Q7</span>
-            </div>
-          </div>
-
-          <div class="airport-endpoint arr">
-            <span class="endpoint-role">ARRIVAL · 도착</span>
-            <strong class="endpoint-iata">PUS</strong>
-            <span class="endpoint-city">김해 · GIMHAE</span>
-          </div>
+          <span class="kiosk-badge">✈️ Local<b class="logo-rise">Rise</b> SELF CHECK-IN KIOSK</span>
+          <span style="font-size:.88rem;color:var(--rise-dark);font-weight:900" id="qCounter">QUESTION 1 / 7</span>
         </div>
 
         <div id="surveyBox"><div class="spinner"></div></div>
@@ -104,95 +227,101 @@
             <span id="tagCountText">0 / 7 태그 발권됨</span>
           </div>
           <div class="suitcase" id="profile">
-            <div class="luggage-empty">왼쪽 체크인 질문을 선택하면<br>실제 공항 수하물 태그(IATA 규격) 7개가<br>파도처럼 일렁이며 한눈에 부착됩니다!</div>
+            <div class="luggage-empty">왼쪽 체크인 질문을 선택하면<br>흩어진 취향 데이터가 공항 수하물 태그(IATA)로<br>하나씩 모여 나만의 김해 여행을 완성합니다!</div>
           </div>
         </div>
         <div class="luggage-foot">
-          <span>ROUTE · KWJ ➔ PUS</span>
-          <span>SKY PRIORITY · 7 BAGS MAX</span>
+          <span>Local<b class="logo-rise">Rise</b> · KWJ ➔ PUS</span>
+          <span>&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</span>
         </div>
       </aside>
     </div>
   </section>
 
-  <!-- ==================== STAGE 2: 보딩패스 & 추천 여행지 5곳 선택 ==================== -->
+  <!-- ==================== STAGE 2: 좌측 보딩패스 & 우측 상하(위·아래) 셔플 추천 여행지 5곳 ==================== -->
   <section class="stage" id="stage2">
-    <!-- 상단: 보딩패스 티켓 -->
-    <div class="boarding-pass">
-      <div class="bp-main">
-        <div class="bp-top">
-          <div class="bp-airline">
-            <span>BOARDING PASS</span>
-            TEAM LocalRise · LocalRise Airlines
+    <div class="stage2-split-grid">
+      <!-- 좌측 컬럼: 보딩패스 티켓 + 다시 체크인 버튼 -->
+      <div class="stage2-left-col">
+        <div class="boarding-pass">
+          <div class="bp-main">
+            <div class="bp-top">
+              <div class="bp-airline">
+                <span>BOARDING PASS</span>
+                <strong class="bp-brand"><b class="logo-local">Local</b><b class="logo-rise">Rise</b></strong>
+              </div>
+              <div class="bp-route">
+                <div class="bp-city"><small>DEPARTURE</small><b>KWJ</b></div>
+                <div class="bp-plane">━ ✈️ ━</div>
+                <div class="bp-city"><small>ARRIVAL</small><b>PUS</b></div>
+              </div>
+            </div>
+
+            <div class="bp-persona-box">
+              <img src="/static/brand/todeogi_thumbsup.png?v=tr2" alt="" onerror="this.remove()">
+              <div>
+                <div class="bp-persona-label">PASSENGER TRAVEL PERSONA · 승객 맞춤 여행 성향</div>
+                <div class="bp-persona-text" id="bpPersona">나만의 김해 여행 코스가 완성되었어요!</div>
+              </div>
+            </div>
+
+            <div class="bp-tags" id="bpTags"></div>
           </div>
-          <div class="bp-route">
-            <div class="bp-city"><small>DEPARTURE · 출발</small><b>KWJ</b></div>
-            <div class="bp-plane">━━ ✈️ ━━</div>
-            <div class="bp-city"><small>ARRIVAL · 도착</small><b>PUS</b></div>
+
+          <div class="bp-stub">
+            <div class="bp-stub-left">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
+                <span class="stamp-mark">GIMHAE APPROVED ★</span>
+                <span style="font-family:monospace;font-size:.76rem;color:var(--muted)" id="bpSession">LR-2026</span>
+              </div>
+              <div class="stub-info">
+                <div><span>FLIGHT</span><b>LR-2026</b></div>
+                <div><span>GATE / SEAT</span><b>G05 / 01A</b></div>
+                <div><span>ROUTE</span><b>KWJ ➔ PUS</b></div>
+                <div><span>LOUNGE</span><b>MAIN MONITOR</b></div>
+              </div>
+            </div>
+
+            <!-- 입국 심사 도장 (LocalRise Immigration Stamp) -->
+            <div class="immigration-stamp" aria-label="LocalRise Immigration Stamp">
+              <div class="imm-stamp-ring">
+                <span class="imm-stamp-top">IMMIGRATION · PUS</span>
+                <strong class="imm-stamp-center"><b class="logo-local">Local</b><b class="logo-rise">Rise</b></strong>
+                <span class="imm-stamp-sub">ENTRY PERMITTED</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="bp-persona-box">
-          <img src="/static/brand/todeogi_thumbsup.png" alt="" onerror="this.remove()">
+        <div class="stage-bottom-bar">
+          <button class="restart-btn" id="restart" type="button">🔄 처음부터 다시 체크인</button>
+          <button class="finale-go-btn" id="goFinaleBtn" type="button" onclick="showFinaleScreen()">🗳️ 관람 완료 · 투표 &amp; 엔딩</button>
+        </div>
+      </div>
+
+      <!-- 우측 컬럼: 위·아래 세로 셔플 추천지 5곳 덱 -->
+      <div class="window-deck-section">
+        <div class="deck-header">
           <div>
-            <div class="bp-persona-label">PASSENGER TRAVEL PERSONA · 승객 맞춤 여행 성향</div>
-            <div class="bp-persona-text" id="bpPersona">나만의 김해 여행 코스가 완성되었어요!</div>
+            <h2>🪟 기내 창밖으로 미리 보는 김해 추천 여행지 BEST 5</h2>
+            <p>창문을 위·아래로 스와이프하거나 터치해 5곳을 둘러보고, 마음에 드는 곳으로 비행해 보세요</p>
+          </div>
+          <div class="deck-controls">
+            <button class="deck-nav-btn" id="prevCardBtn" type="button" aria-label="이전 추천지">▲ 이전</button>
+            <div class="deck-dots" id="deckDots"></div>
+            <button class="deck-nav-btn" id="nextCardBtn" type="button" aria-label="다음 추천지">다음 ▼</button>
           </div>
         </div>
 
-        <div class="bp-tags" id="bpTags"></div>
-      </div>
-
-      <div class="bp-stub">
-        <div class="bp-stub-left">
-          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;">
-            <span class="stamp-mark">GIMHAE APPROVED ★</span>
-            <span style="font-family:monospace;font-size:.76rem;color:var(--muted)" id="bpSession">LR-2026</span>
-          </div>
-          <div class="stub-info">
-            <div><span>FLIGHT</span><b>LR-2026</b></div>
-            <div><span>GATE / SEAT</span><b>G05 / 01A</b></div>
-            <div><span>ROUTE</span><b>KWJ ➔ PUS</b></div>
-            <div><span>LOUNGE</span><b>MAIN MONITOR</b></div>
-          </div>
-        </div>
-
-        <!-- 입국 심사 도장 (LocalRise Immigration Stamp) -->
-        <div class="immigration-stamp" aria-label="LocalRise Immigration Stamp">
-          <div class="imm-stamp-ring">
-            <span class="imm-stamp-top">IMMIGRATION · PUS</span>
-            <strong class="imm-stamp-center">LocalRise</strong>
-            <span class="imm-stamp-sub">ENTRY PERMITTED</span>
-          </div>
+        <div class="deck-viewport" id="deckViewport">
+          <div class="deck-stage" id="recoBox"></div>
         </div>
       </div>
-    </div>
-
-    <!-- 하단: 비행기 창문 뷰 5개 추천지 셔플 카드 덱 -->
-    <div class="window-deck-section">
-      <div class="deck-header">
-        <div>
-          <h2>🪟 기내 창밖으로 미리 보는 김해 추천 여행지 BEST 5</h2>
-          <p>카드를 좌우로 넘기거나 옆 카드를 터치해 5곳을 둘러보고, 마음에 드는 곳으로 비행해 보세요</p>
-        </div>
-        <div class="deck-controls">
-          <button class="deck-nav-btn" id="prevCardBtn" type="button" aria-label="이전 추천지">◀ 이전</button>
-          <div class="deck-dots" id="deckDots"></div>
-          <button class="deck-nav-btn" id="nextCardBtn" type="button" aria-label="다음 추천지">다음 ▶</button>
-        </div>
-      </div>
-
-      <div class="deck-viewport" id="deckViewport">
-        <div class="deck-stage" id="recoBox"></div>
-      </div>
-    </div>
-
-    <div class="stage-bottom-bar">
-      <button class="restart-btn" id="restart" type="button">🔄 처음부터 다시 체크인</button>
     </div>
   </section>
 
-  <!-- ==================== STAGE 3: 상공 비행 체험 + 모니터 안내 ==================== -->
+  <!-- [주석 처리 · 별도 보관: stage3_inflight_info.archive.html]
+       STAGE 3 상공 비행 · 마일리지 · 기내 매거진 · 모니터 안내 보드 비활성화
   <section class="stage" id="stage3">
     <div class="inflight-stage">
       <div class="inflight-top-bar">
@@ -203,7 +332,6 @@
         <div class="countdown-pill" id="countdownPill">⏱ 도착까지 60초 · 마일리지 0 M</div>
       </div>
 
-      <!-- 60초 비행 진행 게이지 -->
       <div class="render-progress-box">
         <div class="render-progress-head">
           <span id="renderStatusText">✈️ 기장 토더기와 함께 목적지 상공으로 순항하고 있습니다</span>
@@ -214,77 +342,23 @@
         </div>
       </div>
 
-      <!-- 하늘 비행 + 터치 가능한 가야 왕관/별 수집 미니게임 씬 -->
-      <div class="flight-sky-scene" id="flightScene">
-        <div class="cockpit-hud">
-          <span class="hud-pill" id="hudAlt">ALTITUDE · 10,500 FT</span>
-          <span class="hud-pill" id="hudSpeed">SPEED · 780 KM/H</span>
-          <span class="hud-pill" id="hudRoute">ROUTE · KWJ ➔ PUS</span>
+      <div class="stage3-brand-banner" id="flightScene">
+        <img class="stage3-banner-mascot" src="/static/brand/todeogi_plane.png?v=tr2" alt="기장 토더기" onerror="this.remove()">
+        <div class="stage3-banner-body">
+          <div class="stage3-banner-headline">&ldquo;검색은 줄이고, <span>설렘만 남기다.</span>&rdquo;</div>
+          <div class="stage3-banner-meaning">
+            <b><span class="logo-local">Local</span><span class="logo-rise">Rise</span></b> &mdash;
+            <b>Local</b>(지역의 숨은 가치)을 <b>Rise</b>(당신의 특별한 여행으로 띄우다)
+          </div>
+          <div class="stage3-banner-slogan">&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</div>
         </div>
-
-        <div class="wind-lines">
-          <div class="wind-line" style="top:28%;width:140px;animation-delay:0s;animation-duration:0.85s"></div>
-          <div class="wind-line" style="top:45%;width:210px;animation-delay:0.3s;animation-duration:0.7s"></div>
-          <div class="wind-line" style="top:65%;width:160px;animation-delay:0.55s;animation-duration:0.95s"></div>
-          <div class="wind-line" style="top:80%;width:190px;animation-delay:0.15s;animation-duration:0.75s"></div>
-        </div>
-
-        <svg class="cloud-item" style="top:22px;width:130px;height:55px;animation-duration:6.5s;animation-delay:-1s" viewBox="0 0 130 55">
-          <path d="M25,45 Q10,45 10,32 Q10,20 23,19 Q30,6 48,8 Q62,2 76,12 Q92,10 98,22 Q115,23 115,35 Q115,45 100,45 Z"/>
-        </svg>
-        <svg class="cloud-item" style="top:125px;width:170px;height:65px;animation-duration:5.2s;animation-delay:-3.2s" viewBox="0 0 130 55">
-          <path d="M25,45 Q10,45 10,32 Q10,20 23,19 Q30,6 48,8 Q62,2 76,12 Q92,10 98,22 Q115,23 115,35 Q115,45 100,45 Z"/>
-        </svg>
-        <svg class="cloud-item cloud-front" style="top:148px;width:145px;height:58px;animation-duration:3.4s;animation-delay:-0.8s" viewBox="0 0 130 55">
-          <path d="M25,45 Q10,45 10,32 Q10,20 23,19 Q30,6 48,8 Q62,2 76,12 Q92,10 98,22 Q115,23 115,35 Q115,45 100,45 Z"/>
-        </svg>
-
-        <svg class="route-svg" viewBox="0 0 860 220" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="routeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stop-color="#52e59b" stop-opacity="0.25"/>
-              <stop offset="50%" stop-color="#f5b324" stop-opacity="0.95"/>
-              <stop offset="100%" stop-color="#52e59b" stop-opacity="0.9"/>
-            </linearGradient>
-          </defs>
-          <path class="route-dash" d="M 80 145 Q 430 95 780 120" fill="none" stroke="url(#routeGrad)" stroke-width="3.5"/>
-          <circle cx="80" cy="145" r="7" fill="#52e59b"/>
-          <text x="80" y="176" text-anchor="middle" fill="#52e59b" font-family="'Montserrat', 'Segoe UI', 'Pretendard', sans-serif" font-size="16" font-weight="900" letter-spacing="2">KWJ</text>
-          <circle cx="780" cy="120" r="8" fill="#f5b324"/>
-          <text x="780" y="96" text-anchor="middle" fill="#f5b324" font-family="'Montserrat', 'Segoe UI', 'Pretendard', sans-serif" font-size="17" font-weight="900" letter-spacing="2">PUS ★</text>
-        </svg>
-
-        <div class="flying-jet-wrap" id="flyingJet">
-          <svg viewBox="0 0 220 105" width="100%" height="100%">
-            <g class="jet-contrail">
-              <polygon points="4,58 72,49 72,63" fill="url(#routeGrad)" opacity="0.85"/>
-              <polygon points="22,55 75,51 75,59" fill="#ffffff" opacity="0.9"/>
-            </g>
-            <g transform="translate(55, 12)">
-              <polygon points="18,42 8,14 34,36" fill="#f5b324"/>
-              <polygon points="58,40 34,8 82,36" fill="#d9e7f5"/>
-              <path d="M12,42 C45,32 95,30 138,38 C148,40 154,44 146,49 C112,56 52,55 15,48 Z" fill="#ffffff"/>
-              <path d="M18,45 C55,39 102,38 143,43" fill="none" stroke="#f5b324" stroke-width="3"/>
-              <path d="M118,36 C128,36 136,39 140,42 L115,42 Z" fill="#102a42"/>
-              <circle cx="62" cy="41" r="2.2" fill="#173753"/>
-              <circle cx="74" cy="40.5" r="2.2" fill="#173753"/>
-              <circle cx="86" cy="40" r="2.2" fill="#173753"/>
-              <circle cx="98" cy="40" r="2.2" fill="#173753"/>
-              <polygon points="52,47 26,76 92,48" fill="#f5b324"/>
-              <ellipse cx="64" cy="60" rx="11" ry="4.5" fill="#173753"/>
-            </g>
-          </svg>
-        </div>
-
-        <!-- 하늘에 떠다니는 보너스 아이템 컨테이너 -->
-        <div id="skyTokenLayer"></div>
+        <div id="skyTokenLayer" hidden></div>
       </div>
 
-      <!-- 하단 2열: 왼쪽 기내 엔터테인먼트 / 오른쪽 외부 모니터 안내 & 여권 스탬프 & 응원 -->
       <div class="inflight-grid">
         <div class="ent-card">
           <div>
-            <div class="ent-title">✨ 기내 엔터테인먼트 1 · 하늘의 황금 아이템 & 취향 태그 터치!</div>
+            <div class="ent-title">✨ 기내 엔터테인먼트 1 · 하늘의 황금 아이템 &amp; 취향 태그 터치!</div>
             <p class="ent-sub">위 하늘에 날아오는 김해 아이콘이나 아래 태그를 터치하면 비행기가 가속하며 마일리지가 쌓여요</p>
             <div class="floating-tags" id="floatingTags"></div>
           </div>
@@ -310,26 +384,32 @@
           </div>
 
           <div class="vote-banner">
+            <img class="vote-banner-mascot" src="/static/brand/todeogi_vote.png?v=tr2" alt="투표 토더기" onerror="this.remove()">
             <div>
-              <strong>💛 오늘 김해 비행 체험이 참신하셨나요?</strong>
-              <p>설레는 여행의 시작을 만든 <b>TEAM LocalRise</b>에 소중한 한 표(투표) 부탁드려요!</p>
+              <strong>&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</strong>
+              <p>설레는 여행의 시작을 만든 <b>TEAM <span class="vote-local">Local</span><span class="vote-rise">Rise</span></b>에 소중한 한 표(투표) 부탁드려요!</p>
             </div>
-            <button class="like-btn" id="likeBtn" onclick="toggleCheer(this)">👍 응원하기</button>
+            <button class="like-btn" id="likeBtn" onclick="showFinaleScreen()">🏁 체험 완료 &amp; 응원하기</button>
           </div>
         </div>
       </div>
 
-      <div style="margin-top:14px;display:flex;justify-content:space-between;align-items:center;">
-        <button class="back-btn" style="color:#9ec0de;margin:0" onclick="navigateStep(2)">← STEP 2로 돌아가 다른 여행지 고르기</button>
-        <button class="back-btn" style="color:#9ec0de;margin:0" onclick="startSurvey()">🔄 처음부터 새로 시작하기</button>
+      <div class="inflight-bottom-nav">
+        <button class="back-btn" style="color:var(--rise-dark);margin:0;font-weight:800" onclick="navigateStep(2)">← STEP 2로 돌아가 다른 여행지 고르기</button>
+        <button class="back-btn" style="color:var(--orange-deep);margin:0;font-weight:900" onclick="showFinaleScreen()">🎉 여행 마무리 · LocalRise 엔딩 보기 ➔</button>
       </div>
     </div>
   </section>
+  -->
 
-  <p class="credit">캐릭터: 김해시 마스코트 토더기 (김해시 사용 허락) · 2026 AIM 챌린지 본선 TEAM LocalRise</p>
+  <p class="credit">
+    캐릭터: 김해시 마스코트 토더기 (김해시 사용 허락) · 2026 AIM 챌린지 본선
+    <b>TEAM <span class="logo-local">Local</span><span class="logo-rise">Rise</span></b>
+    &mdash; <span style="color:var(--orange);font-weight:800">&ldquo;흩어진 데이터를 모아, 당신만의 여행을 완성하다&rdquo;</span>
+  </p>
   <div class="debug" id="debug" hidden></div>
 </div>
 
-<script src="/static/airport.js"></script>
+<script src="/static/airport.js?v=revolver23"></script>
 </body>
 </html>
