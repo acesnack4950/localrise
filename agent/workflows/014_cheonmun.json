@@ -1,0 +1,651 @@
+{
+  "172": {
+    "inputs": {
+      "image": "7526756d4a6b4c966f30c7c3a94b6709c71cbe6626abd3ac3e91858b924976ec.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "이미지 로드"
+    }
+  },
+  "173": {
+    "inputs": {
+      "image": "85113a6471104a3c912f7df181f7a3aa775d319b07a60beb2246564e28fe38f7.png",
+      "channel": "red"
+    },
+    "class_type": "LoadImageMask",
+    "_meta": {
+      "title": "마스크 이미지 로드"
+    }
+  },
+  "174": {
+    "inputs": {
+      "image": "a02a7a43434e1c2866b4bdd08ca1f074977c602cab29e0e04d880b52947214de.png"
+    },
+    "class_type": "LoadImage",
+    "_meta": {
+      "title": "이미지 로드"
+    }
+  },
+  "175": {
+    "inputs": {
+      "target_width": 290,
+      "target_height": 290,
+      "padding_color": "white",
+      "interpolation": "area",
+      "image": [
+        "172",
+        0
+      ]
+    },
+    "class_type": "ResizeAndPadImage",
+    "_meta": {
+      "title": "이미지 크기 조정 및 패딩"
+    }
+  },
+  "176": {
+    "inputs": {
+      "resize_type": "scale dimensions",
+      "resize_type.width": 290,
+      "resize_type.height": 290,
+      "resize_type.crop": "center",
+      "scale_method": "area",
+      "input": [
+        "173",
+        0
+      ]
+    },
+    "class_type": "ResizeImageMaskNode",
+    "_meta": {
+      "title": "이미지/마스크 크기 조정"
+    }
+  },
+  "177": {
+    "inputs": {
+      "x": 229,
+      "y": 425,
+      "resize_source": false,
+      "destination": [
+        "174",
+        0
+      ],
+      "source": [
+        "175",
+        0
+      ],
+      "mask": [
+        "176",
+        0
+      ]
+    },
+    "class_type": "ImageCompositeMasked",
+    "_meta": {
+      "title": "마스크된 이미지 합성"
+    }
+  },
+  "178": {
+    "inputs": {
+      "filename_prefix": "todeogi_end_34",
+      "images": [
+        "177",
+        0
+      ]
+    },
+    "class_type": "SaveImage",
+    "_meta": {
+      "title": "이미지 저장",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.64"
+    }
+  },
+  "180": {
+    "inputs": {
+      "filename_prefix": "video/Wan2.2_i2v",
+      "format": "auto",
+      "format.codec": "auto",
+      "codec": "auto",
+      "video": [
+        "179:94",
+        0
+      ]
+    },
+    "class_type": "SaveVideo",
+    "_meta": {
+      "title": "비디오 저장",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.49"
+    }
+  },
+  "179:98": {
+    "inputs": {
+      "width": 832,
+      "height": 624,
+      "length": [
+        "179:163",
+        1
+      ],
+      "batch_size": 1,
+      "positive": [
+        "179:93",
+        0
+      ],
+      "negative": [
+        "179:89",
+        0
+      ],
+      "vae": [
+        "179:90",
+        0
+      ],
+      "start_image": [
+        "178",
+        0
+      ]
+    },
+    "class_type": "WanImageToVideo",
+    "_meta": {
+      "title": "WAN 비디오 생성 (이미지 → 비디오)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:94": {
+    "inputs": {
+      "fps": [
+        "179:162",
+        0
+      ],
+      "bit_depth": 8,
+      "color_space": "sRGB",
+      "chroma_subsampling": "auto",
+      "codec": "none",
+      "images": [
+        "179:87",
+        0
+      ]
+    },
+    "class_type": "CreateVideo",
+    "_meta": {
+      "title": "비디오 생성",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:104": {
+    "inputs": {
+      "shift": 5.000000000000001,
+      "model": [
+        "179:116",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "모델 샘플링 (SD3)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:89": {
+    "inputs": {
+      "text": "色调艳丽，过曝，静态，细节模糊不清，字幕，风格，作品，画作，画面，静止，整体发灰，最差质量，低质量，JPEG压缩残留，丑陋的，残缺的，多余的手指，画得不好的手部，画得不好的脸部，畸形的，毁容的，形态畸形的肢体，手指融合，静止不动的画面，杂乱的背景，三条腿，背景人很多，倒着走",
+      "clip": [
+        "179:84",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Negative Prompt)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:128": {
+    "inputs": {
+      "value": 20
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int (Steps)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:87": {
+    "inputs": {
+      "samples": [
+        "179:85",
+        0
+      ],
+      "vae": [
+        "179:90",
+        0
+      ]
+    },
+    "class_type": "VAEDecode",
+    "_meta": {
+      "title": "VAE 디코드",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:93": {
+    "inputs": {
+      "text": "Five-second continuous shot. Begin from the supplied composite image and its original mascot placement. After a brief pause, Todeok takes two short, relaxed steps toward the camera across the observation deck, alternating the feet at an even pace, then settles with both feet side by side. Both legs use equal stride lengths and equal low foot clearance. During each step, the supporting foot stays planted while the other foot lifts, moves forward and lands. The torso stays balanced with minimal side-to-side sway. Keep the original facing direction. Todeok is softly lit by the cool night ambient light and the glow of the city, matching the dark scene.\n\nKeep the original white 3D mascot design, face, body proportions and smooth surfaces. Both wings remain rounded, solid, fingerless flippers. The balloon-holding wing keeps the same closed grip relative to the torso throughout; the free wing rests beside the body. The four original colored balloons stay attached to the same strings and follow the motion with only a slight delayed sway. Keep their count, shapes and colors consistent.\n\nSmooth slow lateral tracking shot at eye level: the camera slowly and steadily slides to the right along the curved railing, gradually revealing more of the glittering city lights below, while Todeok stays fully visible in the left half of the frame at about the same size with its balloons. Stay within the open observation deck, clear of the curved railing. Keep the city lights, observatory dome and night exposure steady. Clouds drift almost imperceptibly. Keep consistent lighting throughout.",
+      "clip": [
+        "179:84",
+        0
+      ]
+    },
+    "class_type": "CLIPTextEncode",
+    "_meta": {
+      "title": "CLIP Text Encode (Positive Prompt)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:131": {
+    "inputs": {
+      "value": true
+    },
+    "class_type": "PrimitiveBoolean",
+    "_meta": {
+      "title": "Enable 4steps LoRA?",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:90": {
+    "inputs": {
+      "vae_name": "wan_2.1_vae.safetensors"
+    },
+    "class_type": "VAELoader",
+    "_meta": {
+      "title": "VAE 로드",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:84": {
+    "inputs": {
+      "clip_name": "umt5_xxl_fp8_e4m3fn_scaled.safetensors",
+      "type": "wan",
+      "device": "default"
+    },
+    "class_type": "CLIPLoader",
+    "_meta": {
+      "title": "CLIP 로드",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:96": {
+    "inputs": {
+      "unet_name": "wan2.2_i2v_low_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "확산 모델 로드",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:95": {
+    "inputs": {
+      "unet_name": "wan2.2_i2v_high_noise_14B_fp8_scaled.safetensors",
+      "weight_dtype": "default"
+    },
+    "class_type": "UNETLoader",
+    "_meta": {
+      "title": "확산 모델 로드",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:127": {
+    "inputs": {
+      "value": 10
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int (split_step)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:126": {
+    "inputs": {
+      "value": 3.5
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float (CFG)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:102": {
+    "inputs": {
+      "lora_name": "wan2.2_i2v_lightx2v_4steps_lora_v1_low_noise.safetensors",
+      "strength_model": 1.0000000000000002,
+      "model": [
+        "179:96",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoRA 로드 (모델 전용)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.49"
+    }
+  },
+  "179:101": {
+    "inputs": {
+      "lora_name": "wan2.2_i2v_lightx2v_4steps_lora_v1_high_noise.safetensors",
+      "strength_model": 1.0000000000000002,
+      "model": [
+        "179:95",
+        0
+      ]
+    },
+    "class_type": "LoraLoaderModelOnly",
+    "_meta": {
+      "title": "LoRA 로드 (모델 전용)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.49"
+    }
+  },
+  "179:86": {
+    "inputs": {
+      "add_noise": "enable",
+      "noise_seed": 116183805822615,
+      "steps": [
+        "179:119",
+        0
+      ],
+      "cfg": [
+        "179:120",
+        0
+      ],
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": 0,
+      "end_at_step": [
+        "179:125",
+        0
+      ],
+      "return_with_leftover_noise": "enable",
+      "model": [
+        "179:104",
+        0
+      ],
+      "positive": [
+        "179:98",
+        0
+      ],
+      "negative": [
+        "179:98",
+        1
+      ],
+      "latent_image": [
+        "179:98",
+        2
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "고급 KSampler",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:85": {
+    "inputs": {
+      "add_noise": "disable",
+      "noise_seed": 0,
+      "steps": [
+        "179:119",
+        0
+      ],
+      "cfg": [
+        "179:120",
+        0
+      ],
+      "sampler_name": "euler",
+      "scheduler": "simple",
+      "start_at_step": [
+        "179:125",
+        0
+      ],
+      "end_at_step": [
+        "179:119",
+        0
+      ],
+      "return_with_leftover_noise": "disable",
+      "model": [
+        "179:103",
+        0
+      ],
+      "positive": [
+        "179:98",
+        0
+      ],
+      "negative": [
+        "179:98",
+        1
+      ],
+      "latent_image": [
+        "179:86",
+        0
+      ]
+    },
+    "class_type": "KSamplerAdvanced",
+    "_meta": {
+      "title": "고급 KSampler",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:122": {
+    "inputs": {
+      "value": 1
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float (CFG)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:124": {
+    "inputs": {
+      "value": 4
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int (split_step)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:118": {
+    "inputs": {
+      "value": 8
+    },
+    "class_type": "PrimitiveInt",
+    "_meta": {
+      "title": "Int (Steps)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:116": {
+    "inputs": {
+      "switch": [
+        "179:131",
+        0
+      ],
+      "on_false": [
+        "179:95",
+        0
+      ],
+      "on_true": [
+        "179:101",
+        0
+      ]
+    },
+    "class_type": "ComfySwitchNode",
+    "_meta": {
+      "title": "Switch (Model)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:125": {
+    "inputs": {
+      "switch": [
+        "179:131",
+        0
+      ],
+      "on_false": [
+        "179:127",
+        0
+      ],
+      "on_true": [
+        "179:124",
+        0
+      ]
+    },
+    "class_type": "ComfySwitchNode",
+    "_meta": {
+      "title": "Switch (Split Step)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:119": {
+    "inputs": {
+      "switch": [
+        "179:131",
+        0
+      ],
+      "on_false": [
+        "179:128",
+        0
+      ],
+      "on_true": [
+        "179:118",
+        0
+      ]
+    },
+    "class_type": "ComfySwitchNode",
+    "_meta": {
+      "title": "Switch (Steps)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:120": {
+    "inputs": {
+      "switch": [
+        "179:131",
+        0
+      ],
+      "on_false": [
+        "179:126",
+        0
+      ],
+      "on_true": [
+        "179:122",
+        0
+      ]
+    },
+    "class_type": "ComfySwitchNode",
+    "_meta": {
+      "title": "Switch (CFG)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:103": {
+    "inputs": {
+      "shift": 5.000000000000001,
+      "model": [
+        "179:117",
+        0
+      ]
+    },
+    "class_type": "ModelSamplingSD3",
+    "_meta": {
+      "title": "모델 샘플링 (SD3)",
+      "cnr_id": "comfy-core",
+      "ver": "0.3.45"
+    }
+  },
+  "179:117": {
+    "inputs": {
+      "switch": [
+        "179:131",
+        0
+      ],
+      "on_false": [
+        "179:96",
+        0
+      ],
+      "on_true": [
+        "179:102",
+        0
+      ]
+    },
+    "class_type": "ComfySwitchNode",
+    "_meta": {
+      "title": "Switch (Model)",
+      "cnr_id": "comfy-core",
+      "ver": "0.13.0"
+    }
+  },
+  "179:161": {
+    "inputs": {
+      "value": 5
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float (Duration)",
+      "cnr_id": "comfy-core",
+      "ver": "0.19.1"
+    }
+  },
+  "179:162": {
+    "inputs": {
+      "value": 16
+    },
+    "class_type": "PrimitiveFloat",
+    "_meta": {
+      "title": "Float (FPS)",
+      "cnr_id": "comfy-core",
+      "ver": "0.19.1"
+    }
+  },
+  "179:163": {
+    "inputs": {
+      "expression": "floor (a * b + 1)",
+      "values.a": [
+        "179:161",
+        0
+      ],
+      "values.b": [
+        "179:162",
+        0
+      ]
+    },
+    "class_type": "ComfyMathExpression",
+    "_meta": {
+      "title": "수학식",
+      "cnr_id": "comfy-core",
+      "ver": "0.19.1"
+    }
+  }
+}
