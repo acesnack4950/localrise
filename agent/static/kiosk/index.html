@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<title>LocalRise · 김해시보</title>
+<link rel="preload" href="/static/kiosk/fonts/Lato-Bold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/static/kiosk/fonts/NanumMyeongjo-ExtraBold.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/static/kiosk/fonts/Jua-Regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/static/kiosk/fonts/IBMPlexSansKR-Medium.woff" as="font" type="font/woff" crossorigin>
+<link rel="preload" href="/static/kiosk/fonts/BlackHanSans-Regular.woff" as="font" type="font/woff" crossorigin>
+<link rel="stylesheet" href="/static/kiosk/kiosk.css?v=47">
+</head>
+<body data-screen="intro">
+<div id="app">
+<div class="grain" aria-hidden="true"></div>
+
+<!-- 공통: 왼쪽 위 로고 / 오른쪽 아래 LocalRise (신문·로고 연출 화면에서는 숨김) -->
+<img class="chrome-logo" src="/static/brand/logo_gaya.png" alt="가야왕도 김해">
+<div class="chrome-mark">Local<i>Rise</i></div>
+
+<!-- 0. 시작 -->
+<section class="screen active" id="s-intro">
+  <div class="intro">
+    <div class="intro-stage">
+      <div class="halo"></div>
+      <div class="intro-bob">
+        <div class="bubble">안녕하세요! 김해의 기자 <b>토더기</b>예요</div>
+        <img class="mascot" src="/static/brand/k_hello.png" alt="토더기">
+      </div>
+    </div>
+    <h1 class="intro-title">나만의 김해 여행</h1>
+    <p class="intro-sub">질문 7개에 답하면 토더기가 <b>김해시보</b>에 실어 드려요</p>
+    <button class="btn-primary" id="btnStart" type="button">여행 떠나기</button>
+  </div>
+</section>
+
+<!-- 1. 로고 연출 -->
+<section class="screen" id="s-splash">
+  <div class="splash-word" id="splashWord" aria-label="LocalRise"></div>
+  <p class="splash-sub" id="splashSub">"흩어진 데이터를 모아, 당신만의 여행을 완성하다"</p>  <!-- 한 줄 설명: 문구 정해지면 여기만 바꾸면 됨 -->
+</section>
+
+<!-- 2. 질문 -->
+<section class="screen" id="s-quiz">
+  <div class="quiz">
+    <div class="quiz-progress">
+      <div class="segs" id="qSegs"></div>
+      <span id="qCount">1 / 7</span>
+    </div>
+    <div class="quiz-q">
+      <img class="mascot q-mascot" id="qMascot" src="/static/brand/k_main.png" alt="">
+      <div>
+        <p class="q-no" id="qNo">Q1</p>
+        <h2 class="q-text" id="qText">질문을 불러오고 있어요</h2>
+      </div>
+    </div>
+    <div class="opts" id="qOpts"></div>
+    <button class="btn-back" id="qBack" type="button">‹ 이전 질문</button>
+  </div>
+</section>
+
+<!-- 3. 김해시보 (화면 전체가 신문) -->
+<section class="screen" id="s-paper">
+  <article class="newspaper" id="newspaper">
+    <header class="masthead">
+      <div class="mh-top">
+        <span id="mhDate">2026년 11월 18일 화요일</span>
+        <span>LocalRise 특별판 · 제2026호</span>
+        <span>발행 · 토더기 기자</span>
+      </div>
+      <div class="mh-title">
+        <img src="/static/brand/logo_gaya.png" alt="">
+        <h1>김해시보</h1>
+        <img src="/static/brand/logo_city.png" alt="">
+      </div>
+      <div class="mh-rule"></div>
+      <div class="mh-headline">
+        <span class="mh-traveler"><img src="/static/brand/k_travel.png" alt=""><span class="mh-tag">오늘의 여행자</span></span>
+        <p id="mhPersona">당신만을 위한 김해 여행 특별판을 인쇄하고 있어요…</p>
+      </div>
+      <div class="mh-keywords" id="mhKeywords"></div>
+    </header>
+    <div class="np-grid printing" id="npGrid"></div>
+    <footer class="np-foot">
+      <img src="/static/brand/k_notice.png" alt="">
+      <p id="npHint"><b>인쇄 중</b> 김해 곳곳을 취재한 기사가 곧 나와요</p>
+      <button class="np-restart" id="paperRestart" type="button">처음으로</button>
+    </footer>
+  </article>
+</section>
+
+<!-- 4. 잠시만 기다려 주세요 (왼쪽 진행 + 오른쪽 리볼버 5곳) -->
+<section class="screen" id="s-wait">
+  <div class="wait">
+    <aside class="wait-panel" id="waitPanel">
+      <div class="flight" id="flight">
+        <img class="plane" src="/static/brand/k_plane.png" alt="">
+        <div class="track"><i class="fill"></i></div>
+        <span class="pt start">김해 출발</span>
+        <span class="pt end" id="vDest">여행지</span>
+      </div>
+      <div class="say" id="vSay" hidden>
+        <p class="bubble say-bubble">영상이 완성됐어요!<br><b>옆 모니터</b>에서 지금 재생 중이에요</p>
+        <img class="mascot say-img" src="/static/brand/k_point_right.png" alt="">
+      </div>
+      <p class="wait-pct" id="vPct">0%</p>
+      <h2 class="wait-title" id="vTitle">잠시만 기다려 주세요</h2>
+      <p class="wait-sub" id="vSub">토더기가 여행 가방을 챙기는 중</p>
+      <ol class="wait-steps" id="vSteps">
+        <li>장소 확정</li><li>현장 촬영</li><li>영상 편집</li><li>모니터 송출</li>
+      </ol>
+      <p class="wait-hint" id="vHint">완성된 영상은 <b>옆 모니터</b>에서 재생돼요</p>
+      <button class="btn-primary small" id="btnFinish" type="button" hidden>여행 마무리하기</button>
+    </aside>
+    <div class="drum-wrap" id="drumWrap">
+      <p class="drum-label">오늘의 기사 5편 · 위아래로 넘겨 보세요</p>
+      <div class="drum" id="drum"><div class="cyl" id="cyl"></div></div>
+      <div class="drum-dots" id="drumDots"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. 마무리 -->
+<section class="screen" id="s-end">
+  <div class="end">
+    <h2 class="end-title">김해에서 만나요!</h2>
+    <div class="clip">
+      <span class="clip-stamp">취재 완료</span>
+      <img class="clip-photo" id="endPhoto" alt="">
+      <div class="clip-text">
+        <p class="clip-kicker">김해시보 · 오늘의 여행지</p>
+        <h3 id="endPlace">장소</h3>
+      </div>
+      <img class="clip-mascot" src="/static/brand/k_flag.png" alt="">
+    </div>
+    <p class="end-vote"><span class="qr-ico" aria-hidden="true"></span>마음에 드셨다면 부스의 <b>항공권 패널 QR</b>로 LocalRise에 투표해 주세요</p>
+    <button class="btn-primary" id="endRestart" type="button">처음으로 <small id="endCount">20</small></button>
+  </div>
+</section>
+
+<div class="debug" id="debug" hidden></div>
+</div>
+<script src="/static/kiosk/kiosk.js?v=47"></script>
+</body>
+</html>
