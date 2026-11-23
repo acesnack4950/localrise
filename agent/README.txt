@@ -7,9 +7,10 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
   quiz.json               2지선다 질문 7개 (문구·가중치 수정 가능)
   place_traits.json       장소별 질문 성향표 (A / B / N=상관없음)
   poi_config.json         장소별 LoRA 파일명·트리거·이미지 프롬프트·미디어 파일명
-  static/index.html       시연 화면 3단계: 질문 → 추천 카드 → 장소 영상 (http://localhost:5000/)
-  static/test.html        단순 테스트 화면 (http://localhost:5000/static/test.html)
-  video_jobs.py           장소 영상 작업 API (지금은 static 파일 사용, 나중에 Comfy Cloud 연결 자리)
+  static/kiosk/index.html   태블릿 시연 화면 (질문 → 김해시보 → 영상 대기 → 마무리)
+  static/kiosk/display.html 옆 모니터 화면 (생성된 영상 재생)
+  video_jobs.py           장소 영상 생성 API (Comfy Cloud 실시간 생성, 요청마다 새 시드)
+  workflows/              장소별 Comfy Cloud 영상 워크플로 (001~020)
   static/images/          장소 이미지 넣는 곳 (GIMHAE_001.png ...)
   static/videos/          장소 영상 넣는 곳 (GIMHAE_001.mp4 ...)
   warmup_cache.py         질문 답 128가지 미리 생성 + 추천 품질 리포트 (전시 전 1회)
@@ -57,7 +58,8 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
   "[LocalRise] AI 준비 완료" 가 뜨면 AI 연결 준비 끝.
 
   확인할 주소 (브라우저)
-    http://localhost:5000/                              질문 테스트 화면
+    http://localhost:5000/                              태블릿 시연 화면 (키오스크로 이동)
+    http://localhost:5000/static/kiosk/display.html     옆 모니터 화면
     http://localhost:5000/docs                          API 직접 테스트
     http://localhost:5000/health                        상태 점검 (llm_ok: true 여야 함)
     http://localhost:5000/current_region?region_id=GIMHAE   Re:Local 연계 API
@@ -90,7 +92,7 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
 
 5. API 목록
 -----------
-  GET  /                  시연 화면 (주소 끝에 ?debug 를 붙이면 생성 방식·응답 시간 표시)
+  GET  /                  태블릿 시연 화면(/static/kiosk/index.html)으로 이동
   POST /api/videos        장소 영상 작업 등록  {"place_id":"GIMHAE_001","session_id":"..."}
   GET  /api/video-status/{task_id}   작업 상태 (succeeded / not_ready) + video_url·image_url
   GET  /quiz              질문 7개 (프론트엔드가 화면에 띄울 내용)
@@ -131,7 +133,7 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
                                             안 맞는 점: ✘ 분위기 있는 저녁·밤 (이곳은 '햇살 좋은 낮' 쪽)
 
   ③ AI 성향 분석 + 코스 구성
-     qwen2.5:7b가 ✔/✘와 근거를 읽고
+     AI(기본 gpt-4o-mini, 또는 qwen2.5:7b)가 ✔/✘와 근거를 읽고
        - 어떤 여행자인지 요약 (persona_summary)
        - 10곳 중 5곳 선택. 5곳이 한 종류(유적만 등)로 몰리면 다른 성격 장소를 섞어 코스를 다채롭게
        - CSV 근거 문장만으로 추천 이유 작성
@@ -159,7 +161,7 @@ LocalRise 김해 관광지 추천 API v2  (2026 AIM 챌린지 본선)
 
   ⑦ 미디어 연결
      static/images/GIMHAE_001.png, static/videos/GIMHAE_001.mp4 처럼 파일을 넣으면
-     응답의 image_url / video_url 에 자동으로 주소가 들어가고 테스트 화면에 표시됨.
+     응답의 image_url / video_url 에 자동으로 주소가 들어가고 시연 화면에 표시됨.
 
   ⑧ 추천 방식 바꾸기 (비교용)
      기본은 AI 방식. 이전 방식(점수 상위 8곳 순서대로, AI는 위쪽 위주로 선택)으로 바꾸려면:
