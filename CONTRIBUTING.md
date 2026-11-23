@@ -1,7 +1,18 @@
 # 팀 작업 규칙 (처음이면 이것만 읽으세요)
 
 ## 한 줄 요약
-> **main에 직접 올리지 않는다. 이슈 → 브랜치 → PR → 팀장 확인 → 합치기.**
+> **main·dev에 직접 올리지 않는다. 이슈 → 브랜치 → PR(→ dev) → 팀장 확인 → 합치기.**
+
+## 브랜치 구조
+| 브랜치 | 뜻 | 누가 합치나 |
+|---|---|---|
+| `main` | **제출·시연용 안정 버전**. 릴리즈(제출) 때만 바뀜 | 팀장 (`dev → main` PR) |
+| `dev` | **작업 통합 브랜치**. 모든 PR은 여기로 | 팀장 (리뷰 후 Merge) |
+| `feat/…` 등 | 각자 작업 | 본인 |
+
+```
+feat/7-quiz-page ──PR──▶ dev ──(제출 직전 PR)──▶ main
+```
 
 ---
 
@@ -19,7 +30,7 @@ cp .env.example .env     # 비밀값은 .env에만 적기 (GitHub에 안 올라�
 
 ## 2. 작업 시작 (매번)
 ```bash
-git switch main
+git switch dev
 git pull                          # 최신 받기 (꼭!)
 git switch -c feat/7-quiz-page    # 브랜치 이름: 종류/이슈번호-짧은설명
 ```
@@ -41,13 +52,13 @@ git push -u origin feat/7-quiz-page
 
 ## 4. PR 만들기
 1. GitHub에서 **Compare & pull request**
-2. `base: main ← compare: 내 브랜치` 확인
+2. `base: dev ← compare: 내 브랜치` 확인 (**main 아님!**)
 3. 체크리스트 채우고, 설명에 `Closes #7`
 4. **Reviewers**에 팀장 지정 → Create
 
 ## 5. 합쳐진 뒤
 ```bash
-git switch main
+git switch dev
 git pull
 git branch -d feat/7-quiz-page
 ```
@@ -57,7 +68,7 @@ git branch -d feat/7-quiz-page
 ## 🚫 절대 하지 말 것
 - API 키·토큰을 코드, 이슈, PR, 커밋 메시지에 쓰기 → **`.env`에만**
 - `.safetensors` 모델, 생성 영상, 데이터셋 올리기 → **공유 드라이브에 두고 링크만**
-- `main`에 직접 push
+- `main`·`dev`에 직접 push
 - 모르는 에러를 무시하고 넘어가기 → 슬랙에 에러 메시지 그대로 붙여서 질문
 
 ## 💬 막히면

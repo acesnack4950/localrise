@@ -2,3 +2,6 @@
 *.png binary
 *.jpg binary
 *.json text eol=lf
+
+# 제출 자료는 바이트 그대로 보관
+submission/** -text

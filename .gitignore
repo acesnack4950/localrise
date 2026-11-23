@@ -49,3 +49,15 @@ Thumbs.db
 
 # ===== 추천 결과 캐시 (자동 생성, 노트북에서만 보관) =====
 cache/
+
+# ===== 김해시 마스코트 토더기 (노트북에만 보관) =====
+agent/static/brand/*.png
+
+# ===== 개인 작업 파일 (노트북에만 보관) =====
+LocalRise.zip
+LocalRise.pptx
+_tmp/
+_kiosk_src/
+Claude outputs/
+agent/02_LocalRise_지역추천지.json
+agent/report_ai.txt

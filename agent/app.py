@@ -109,7 +109,10 @@ DEFAULT_PREFERENCE = os.environ.get(
     "가족과 함께 김해의 가야 역사와 자연을 여유롭게 둘러보고 싶어요.",
 )
 
-PROMPT_VERSION = "v2.1"    # AI 지시문을 바꾸면 올릴 것 (캐시 자동 무효화)
+# 서버 시작 직후 /current_region 기본값 = 02 제출 JSON과 같은 질문 답 (make_submission_json.py --quiz 와 동일)
+DEFAULT_QUIZ = os.environ.get("LOCALRISE_DEFAULT_QUIZ", "ABAAABA").strip().upper()
+
+PROMPT_VERSION = "v2.2"    # AI 지시문을 바꾸면 올릴 것 (캐시 자동 무효화)
 
 
 # =========================================================
@@ -411,7 +414,7 @@ def llm_generate(system: str, prompt: str) -> str:
             messages=[{"role": "system", "content": system}, {"role": "user", "content": prompt}],
             response_format={"type": "json_object"},
             temperature=0, seed=42,   # 같은 입력 → 최대한 같은 결과 (최종 고정은 캐시로)
-            max_tokens=1500,
+            max_tokens=2500,
         )
         return resp.choices[0].message.content or ""
     resp = ollama_client().generate(
@@ -501,11 +504,13 @@ def build_system_prompt() -> str:
     rules = (
         [f"recommendations는 정확히 {TARGET_COUNT}개, 서로 다른 후보. candidate_no와 place_name은 후보 목록 그대로 쓴다."]
         + _SELECT_RULES[SELECT_MODE]
-        + ["persona_summary는 사용자가 입력한 성향만 근거로, 어떤 여행자인지 따뜻하게 1~2문장으로 쓴다.",
+        + ["persona_summary는 사용자가 입력한 성향만 근거로, 어떤 여행자인지 따뜻한 해요체로 1~2문장 쓴다.",
            "recommend_reason\n"
-           "   - 3문장 이상 4문장 이하. 문장 끝은 반드시 '.', '!', '?' 중 하나. 쉼표는 문장 구분자가 아니다.\n"
-           "   - 첫 문장은 장소명으로 시작하고, 사용자 성향('✔ 맞는 점')과 연결되는 이유를 한 문장 이상 쓴다.\n"
-           "   - 장소에 대한 사실은 반드시 그 후보의 근거1~5와 테마 문장에 있는 내용만 쓴다. 근거의 표현을 최대한 그대로 살린다.\n"
+           "   - 정확히 4문장, 해요체('~예요', '~어요', '~요.'). 문장 끝은 반드시 '.', '!', '?' 중 하나. 쉼표는 문장 구분자가 아니다.\n"
+           "   - 1~2번째 문장(장소 소개): 장소명으로 시작해, 그 후보의 근거1~5와 테마 문장의 표현을 거의 그대로 살려 무엇이 있는 곳인지, 어떤 풍경·분위기인지 쓴다.\n"
+           "   - 3~4번째 문장(성향 연결): '✔ 맞는 점'의 취향을 하나씩 골라 '○○을 좋아한다면 (근거에 나오는 구체적인 활동·장소)이 잘 맞아요.' 또는 '○○와 함께라면 (근거에 나오는 활동)을 즐길 수 있어요.' 형식으로 쓴다.\n"
+           "   - 취향만 나열하는 문장(예: '조용하고 차분한 분위기를 제공합니다.')은 쓰지 않는다. 모든 문장에 그 장소만의 구체적인 사실(근거에 있는 시설·풍경·활동)이 하나 이상 들어가야 한다.\n"
+           "   - 장소에 대한 사실은 반드시 그 후보의 근거1~5와 테마 문장에 있는 내용만 쓴다.\n"
            "   - 유물·시설·숫자·연도·시대 표현은 그 후보 데이터에 있는 단어만 쓴다. 다른 후보의 단어를 섞지 않는다.\n"
            "   - 데이터에 없는 비용, 운영시간, 주차, 행사, 효과를 만들지 않는다.\n"
            "   - '후보 3' 같은 번호, '✔', '✘' 기호, \"~와 달리\", \"~을 피하고 싶다면\" 같은 부정 비교 표현을 쓰지 않는다.",
@@ -796,8 +801,15 @@ def media_urls(place_id: str) -> dict:
 
 def with_media(result: dict) -> dict:
     out = dict(result)
-    out["recommendations"] = [{**r, **media_urls(r["place_id"])} for r in result["recommendations"]]
+    out["recommendations"] = [{**r, "image_prompt": POI.get(r["place_id"], {}).get("image_prompt", r.get("image_prompt", "")),
+                                **media_urls(r["place_id"])} for r in result["recommendations"]]
     return out
+
+
+import video_jobs  # noqa: E402  (시연 화면 STEP 3: 장소 영상 작업 등록·상태 확인)
+
+video_jobs.setup(PLACES, POI, media_urls)
+app.include_router(video_jobs.router)
 
 
 @app.get("/", include_in_schema=False)
@@ -850,6 +862,17 @@ def recommend(req: PreferenceRequest):
     return result
 
 
+def default_quiz_result() -> dict:
+    """02 제출 JSON과 같은 입력(DEFAULT_QUIZ)의 추천 결과. 캐시에 있으면 그대로 사용."""
+    if len(DEFAULT_QUIZ) == len(QUESTIONS) and set(DEFAULT_QUIZ) <= {"A", "B"}:
+        answers = normalize_answers({q["id"]: c for q, c in zip(QUESTIONS, DEFAULT_QUIZ)})
+        key = "quiz:" + answers_key(answers)
+        return cached_run(key, lambda: run_pipeline(
+            answers_to_text(answers), candidates_from_quiz(answers), answers, key))
+    return cached_run("text:" + DEFAULT_PREFERENCE,
+                      lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE)))
+
+
 @app.get("/current_region")
 def current_region(region_id: str = Query("", description="요청 지역 ID (GIMHAE)")):
     """대회 공통 Re:Local 연계 API: GET http://{HOST}:5000/current_region?region_id=GIMHAE"""
@@ -861,8 +884,7 @@ def current_region(region_id: str = Query("", description="요청 지역 ID (GIM
     with LATEST_LOCK:
         latest = LATEST
     if latest is None:
-        latest = cached_run("text:" + DEFAULT_PREFERENCE,
-                            lambda: run_pipeline(DEFAULT_PREFERENCE, candidates_from_text(DEFAULT_PREFERENCE)))
+        latest = default_quiz_result()
         set_latest(latest)
     return public(latest)
 
