@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LocalRise · 영상 모니터</title>
+<style>
+@font-face{font-family:"NanumMyeongjo";src:url(fonts/NanumMyeongjo-ExtraBold.woff) format("woff");font-weight:800}
+@font-face{font-family:"Jua";src:url(fonts/Jua-Regular.woff) format("woff")}
+@font-face{font-family:"IBMPlexKR";src:url(fonts/IBMPlexSansKR-Medium.woff) format("woff")}
+@font-face{font-family:"GowunDodum";src:url(fonts/GowunDodum-Regular.woff) format("woff")}
+@font-face{font-family:"LatoB";src:url(fonts/Lato-Bold.woff) format("woff")}
+:root{--paper:#F2E9D6;--hi:#FAF5EA;--ink:#1E1A15;--ink-2:#5C5145;--green:#1E9A1E;--orange:#EE8A2F;--ease:cubic-bezier(.22,.8,.24,1)}
+*{margin:0;padding:0;box-sizing:border-box}[hidden]{display:none!important}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--paper);color:var(--ink);font-family:"IBMPlexKR",sans-serif;cursor:none}
+.logo{position:fixed;top:3.5vh;left:2.5vw;height:7vh;z-index:5;transition:opacity .6s}
+.mark{position:fixed;right:2.5vw;bottom:3vh;font-family:"LatoB",sans-serif;font-size:3.6vh;z-index:5;transition:opacity .6s}
+.mark i{font-style:normal;color:var(--green)}
+body.playing .logo,body.playing .mark{opacity:0}
+.view{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;gap:4vw;opacity:0;visibility:hidden;transition:opacity .8s var(--ease),visibility 0s .8s}
+.view.on{opacity:1;visibility:visible;transition:opacity .8s var(--ease)}
+.toduck{height:52vh;filter:drop-shadow(0 1.3vh 1.5vh #6b553330)}
+.on .toduck{animation:pop .8s var(--ease) both,bob 3s 1s ease-in-out infinite}
+@keyframes pop{from{transform:scale(.6);opacity:0}}
+@keyframes bob{50%{transform:translateY(-1.3vh)}}
+.talk{max-width:46vw}
+.bubble{position:relative;display:inline-block;background:var(--hi);border:.3vh solid var(--ink);border-radius:3.4vh;padding:3vh 3vw;box-shadow:0 .6vh 0 var(--ink)}
+.bubble::after{content:"";position:absolute;left:-1.45vh;top:50%;width:2.4vh;height:2.4vh;background:var(--hi);border-left:.3vh solid var(--ink);border-bottom:.3vh solid var(--ink);transform:translateY(-50%) rotate(45deg)}
+.bubble h1{font-family:"Jua",sans-serif;font-weight:400;font-size:6.2vh;line-height:1.25;letter-spacing:-.03em}
+.bubble p{font-size:3vh;color:var(--ink-2);margin-top:1.6vh;line-height:1.5}
+.g{color:var(--green)}.o{color:var(--orange)}
+.on .bubble{animation:rise .8s .25s var(--ease) both}
+@keyframes rise{from{transform:translateY(2vh);opacity:0}}
+.bar{width:100%;height:1.2vh;border-radius:99px;background:#1e1a151a;margin-top:3vh;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--green);border-radius:99px;transition:width 1.4s linear}
+#v-play{background:var(--paper)}
+#v-play video{width:100%;height:100%;object-fit:contain;background:var(--paper)}
+.badge{position:fixed;left:2.5vw;bottom:3vh;display:flex;align-items:center;gap:1vw;background:#1e1a15cc;color:#fff;border-radius:99px;padding:1vh 2vw 1vh 1vh;font-size:2.6vh;opacity:0;transition:opacity .6s}
+.badge img{height:7vh;margin:-3vh 0 -1vh}
+body.playing .badge{opacity:1}
+</style>
+</head>
+<body>
+<img class="logo" src="/static/brand/logo_gaya.png" alt="">
+<div class="mark">Local<i>Rise</i></div>
+
+<!-- 대기: 태블릿으로 안내 -->
+<section class="view on" id="v-idle">
+  <img class="toduck" src="/static/brand/k_guide.png" alt="">
+  <div class="talk"><div class="bubble">
+    <h1>안녕하세요!<br>김해의 기자 <span class="g">토더기</span>예요</h1>
+    <p>앞의 <b>태블릿</b>에서 질문 7개에 답하고 여행지를 고르면,<br>토더기가 다녀온 <b class="o">여행 영상</b>이 <b>여기서</b> 나와요!</p>
+  </div></div>
+</section>
+
+<!-- 생성 중 -->
+<section class="view" id="v-gen">
+  <img class="toduck" src="/static/brand/k_plane.png" alt="">
+  <div class="talk"><div class="bubble">
+    <h1><span class="g" id="genPlace">여행지</span>(으)로<br>촬영을 떠났어요!</h1>
+    <p>잠시 후 이 화면에서 영상이 시작돼요.<br>조금만 기다려 주세요 ✈️</p>
+    <div class="bar"><i id="genBar"></i></div>
+  </div></div>
+</section>
+
+<!-- 재생 직전 안내 -->
+<section class="view" id="v-intro">
+  <img class="toduck" src="/static/brand/k_camera.png" alt="">
+  <div class="talk"><div class="bubble">
+    <h1>영상 도착!<br><span class="g" id="introPlace">여행지</span> 여행,<br>지금 보여 드릴게요</h1>
+  </div></div>
+</section>
+
+<!-- 재생 -->
+<section class="view" id="v-play">
+  <video id="vid" muted playsinline></video>
+</section>
+<div class="badge"><img src="/static/brand/k_camera.png" alt=""><span id="badgeText">토더기 기자의 여행 영상</span></div>
+
+<!-- 영상 본 뒤: 다른 곳도 골라 보세요 -->
+<section class="view" id="v-more">
+  <img class="toduck" src="/static/brand/k_guide.png" alt="">
+  <div class="talk"><div class="bubble">
+    <h1>또 보고 싶은 곳이<br>있나요?</h1>
+    <p>태블릿에서 다른 기사의 <b class="o">눌러서 영상 보기</b>를 누르면<br>토더기가 <b>여기서</b> 또 보여 드려요!</p>
+  </div></div>
+</section>
+
+<!-- 마무리 -->
+<section class="view" id="v-end">
+  <img class="toduck" src="/static/brand/k_bouquet.png" alt="">
+  <div class="talk"><div class="bubble">
+    <h1>영상 어떠셨나요?<br><span class="g">김해</span>에서 만나요!</h1>
+    <p>마음에 드셨다면 부스의 <b class="o">항공권 패널 QR</b>로<br>LocalRise에 투표해 주세요 💚</p>
+  </div></div>
+</section>
+
+<script>
+/* 옆 모니터: 대기 → (태블릿에서 장소 선택) 촬영 중 → 영상 도착 안내 → 영상 1번 → '또 보고 싶은 곳?' 안내(다른 곳/같은 곳을 누르면 다시 재생) → 태블릿 '여행 마무리하기' → 마무리 → 대기
+   GET /api/display/latest 를 1.5초마다 확인.  ?mock=1 : 같은 브라우저의 태블릿(?mock=1)을 따라감, &video=주소 */
+const qs = new URLSearchParams(location.search), MOCK = qs.has("mock");
+const $ = id => document.getElementById(id), sleep = ms => new Promise(r => setTimeout(r, ms));
+const GEN_SEC = 60, INTRO_MS = 2500, HOLD_MS = 1500, END_MS = 9000;
+let endedFor = null;   // 마무리 멘트를 이미 보여 준 작업
+//   // HOLD: 재생 전 첫 장면을 잠깐 멈춰 보여 줌
+let state = "idle", shownId = null, genId = null, genStart = 0, busy = false;
+
+function view(v) {
+  state = v;
+  document.querySelectorAll(".view").forEach(s => s.classList.toggle("on", s.id === "v-" + v));
+  document.body.classList.toggle("playing", v === "play");
+}
+async function latest() {
+  if (MOCK) {
+    let t = null; try { t = JSON.parse(localStorage.getItem("lr_mock_task")); } catch (_) {}
+    if (!t) return { task_id: null };
+    const done = Date.now() - t.t0 > (+(qs.get("mocksec") || 12)) * 1000;
+    return { ...t, status: done ? "succeeded" : "running", result: done ? { video_url: qs.get("video") || null } : null };
+  }
+  return (await fetch("/api/display/latest")).json();
+}
+function playOnce(v, id) {
+  return new Promise(res => {
+    const stop = setInterval(() => { if (shownId !== id) { clearInterval(stop); res(); } }, 300);
+    const done = () => { clearInterval(stop); res(); };
+    v.currentTime = 0; v.onended = done; v.onerror = done; v.play().catch(done);
+  });
+}
+/* 새 영상이 오면 지금 보여 주던 것을 끊고 바로 새 영상으로 넘어간다 (태블릿에서 여러 곳을 골라도 다 보여 줌) */
+async function show(t, id) {
+  shownId = id;
+  const alive = () => shownId === id;
+  $("introPlace").textContent = t.place_name || "김해";
+  $("badgeText").textContent = `토더기 기자의 여행 영상 · ${t.place_name || ""}`;
+  view("intro"); await sleep(INTRO_MS); if (!alive()) return;
+  const v = $("vid");
+  if (t.result && t.result.video_url) {
+    v.src = t.result.video_url; v.loop = false; v.pause(); v.currentTime = 0; view("play");
+    await sleep(HOLD_MS); if (!alive()) return;
+    await playOnce(v, id); if (!alive()) return;
+  }
+  v.pause(); view("more");   // 한 번 보여 준 뒤: 다른 곳을 누르면 또 보여 주고, '여행 마무리하기'를 누르면 마무리
+}
+async function finishShow(id) {
+  endedFor = id; shownId = id + ":end";   // 재생 중이던 영상도 바로 멈추게
+  $("vid").pause();
+  view("end"); await sleep(END_MS);
+  if (shownId === id + ":end") view("idle");
+}
+async function poll() {
+  try {
+    const t = await latest();
+    const key = t.show_key || t.task_id;
+    if (t.task_id && t.finished) {
+      if (endedFor !== key) finishShow(key);
+    } else if (t.task_id && key !== shownId) {
+      if (t.status === "succeeded") show(t, key);
+      else if (t.status !== "failed") {
+        if (genId !== t.task_id) { genId = t.task_id; $("vid").pause(); genStart = Date.now(); $("genPlace").textContent = t.place_name || "여행지"; view("gen"); }
+        $("genBar").style.width = Math.min(95, (Date.now() - genStart) / 1000 / GEN_SEC * 100) + "%";
+      }
+    }
+  } catch (_) {}
+  setTimeout(poll, 1500);
+}
+poll();
+</script>
+</body>
+</html>
