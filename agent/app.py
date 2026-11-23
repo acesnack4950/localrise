@@ -23,7 +23,7 @@ from typing import Dict, List, Optional
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -814,10 +814,8 @@ app.include_router(video_jobs.router)
 
 @app.get("/", include_in_schema=False)
 def index():
-    page = path("static", "index.html")
-    if os.path.exists(page):
-        return FileResponse(page)
-    return {"message": "LocalRise API", "docs": "/docs"}
+    # 시연 화면(키오스크)으로 이동
+    return RedirectResponse("/static/kiosk/index.html")
 
 
 @app.get("/health")
